@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROTR Practice Quiz · Rules of the Road</title>
+  <meta name="description" content="Interactive multiple-choice quiz for the COLREGS / Rules of the Road (ROTR). Practice by rule, scope, and question count.">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Verdana, sans-serif;
+      background: #1a2332;
+      color: #e8edf3;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #0d1b2a;
+      padding: 20px 40px;
+      border-bottom: 2px solid #2a4a6b;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header h1 { font-size: 1.4rem; color: #5ba3d9; letter-spacing: 1px; }
+    header span { color: #7a9bb5; font-size: 0.9rem; }
+
+    .container { max-width: 960px; margin: 0 auto; padding: 30px 20px; }
+
+    #config-panel {
+      background: #0f2032;
+      border: 1px solid #2a4a6b;
+      border-radius: 12px;
+      padding: 28px;
+    }
+
+    .config-section { margin-bottom: 24px; }
+    .config-section h2 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #5ba3d9;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #1e3a52;
+    }
+
+    .scope-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .scope-btn {
+      padding: 8px 18px;
+      border-radius: 20px;
+      border: 2px solid #2a4a6b;
+      background: transparent;
+      color: #a0bdd4;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all .2s;
+    }
+    .scope-btn.active { background: #1a5276; border-color: #5ba3d9; color: #fff; }
+
+    .select-links { display: flex; gap: 12px; margin-bottom: 12px; }
+    .select-links a { color: #5ba3d9; font-size: 0.78rem; cursor: pointer; text-decoration: underline; }
+
+    .rules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 6px;
+    }
+
+    .rule-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1px solid #2a4a6b;
+      cursor: pointer;
+      font-size: 0.82rem;
+      color: #a0bdd4;
+      transition: all .2s;
+      user-select: none;
+    }
+    .rule-label:hover { border-color: #5ba3d9; color: #fff; }
+    .rule-label input[type="checkbox"] {
+      accent-color: #5ba3d9;
+      width: 14px; height: 14px;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .rule-label.checked { border-color: #5ba3d9; background: #0d2840; color: #fff; }
+
+    .rules-meta { margin-top: 10px; font-size: 0.78rem; color: #7a9bb5; }
+
+    .count-row { display: flex; align-items: center; gap: 16px; }
+    input[type=range] { flex: 1; accent-color: #5ba3d9; }
+    #count-display { font-size: 1.3rem; font-weight: bold; color: #5ba3d9; min-width: 40px; text-align: right; }
+
+    #export-btn {
+      width: 100%; padding: 11px;
+      background: transparent;
+      border: 2px solid #2a4a6b;
+      border-radius: 10px;
+      color: #7a9bb5;
+      font-size: 0.88rem;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: all .2s;
+      letter-spacing: .5px;
+    }
+    #export-btn:hover { border-color: #5ba3d9; color: #fff; }
+    #export-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+    #start-btn {
+      width: 100%; padding: 14px;
+      background: #1a5276;
+      border: 2px solid #5ba3d9;
+      border-radius: 10px;
+      color: #fff; font-size: 1rem; font-weight: bold;
+      cursor: pointer; letter-spacing: 1px;
+      transition: background .2s;
+    }
+    #start-btn:hover { background: #21618c; }
+    #start-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    #loading { text-align: center; padding: 60px 20px; color: #7a9bb5; font-size: 0.95rem; }
+
+    #quiz-panel { display: none; }
+
+    .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .progress-bar-wrap { flex: 1; height: 6px; background: #1e3a52; border-radius: 3px; margin: 0 16px; }
+    .progress-bar { height: 100%; background: #5ba3d9; border-radius: 3px; transition: width .3s; }
+    .quiz-counter { font-size: 0.85rem; color: #7a9bb5; white-space: nowrap; }
+
+    .question-card {
+      background: #0f2032;
+      border: 1px solid #2a4a6b;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .question-meta { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .badge { padding: 3px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: bold; letter-spacing: .5px; }
+    .badge-BOTH          { background: #1a5276; color: #90d2f5; }
+    .badge-INTERNATIONAL { background: #1a3a52; color: #70b8e0; }
+    .badge-INLAND        { background: #1a3d1a; color: #70c070; }
+    .badge-rule          { background: #2c1a52; color: #b090e0; }
+
+    .question-text { font-size: 1.05rem; line-height: 1.6; margin-bottom: 16px; color: #d8e8f3; }
+
+    .question-illustration {
+      display: block;
+      max-width: 100%;
+      max-height: 360px;
+      object-fit: contain;
+      margin: 0 auto 24px;
+      border-radius: 6px;
+      border: 1px solid #2a4a6b;
+      background: #0a1520;
+    }
+
+    .choices { display: flex; flex-direction: column; gap: 10px; }
+    .choice-btn {
+      padding: 13px 18px;
+      border-radius: 8px;
+      border: 2px solid #2a4a6b;
+      background: transparent;
+      color: #c0d8ea;
+      font-size: 0.92rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all .15s;
+      line-height: 1.4;
+    }
+    .choice-btn:hover:not(:disabled) { border-color: #5ba3d9; background: #0d2840; }
+    .choice-btn.correct { border-color: #27ae60; background: #0d3320; color: #58d68d; }
+    .choice-btn.wrong   { border-color: #c0392b; background: #330d0d; color: #e87c72; }
+    .choice-btn:disabled { cursor: default; }
+
+    #feedback { margin-top: 16px; padding: 14px 18px; border-radius: 8px; font-weight: bold; display: none; }
+    #feedback.correct { background: #0d3320; border: 1px solid #27ae60; color: #58d68d; }
+    #feedback.wrong   { background: #330d0d; border: 1px solid #c0392b; color: #e87c72; }
+
+    #next-btn {
+      margin-top: 16px; padding: 11px 28px;
+      background: #1a5276; border: 2px solid #5ba3d9;
+      border-radius: 8px; color: #fff; font-size: 0.9rem;
+      cursor: pointer; display: none; float: right;
+    }
+    #next-btn:hover { background: #21618c; }
+
+    #results-panel { display: none; }
+
+    .results-card { background: #0f2032; border: 1px solid #2a4a6b; border-radius: 12px; padding: 36px; text-align: center; }
+    .results-score { font-size: 4rem; font-weight: bold; color: #5ba3d9; line-height: 1; }
+    .results-label { color: #7a9bb5; margin: 8px 0 24px; font-size: 1rem; }
+    .results-breakdown { display: flex; justify-content: center; gap: 40px; margin-bottom: 28px; }
+    .breakdown-item { text-align: center; }
+    .breakdown-num { font-size: 2rem; font-weight: bold; }
+    .breakdown-num.ok   { color: #27ae60; }
+    .breakdown-num.fail { color: #c0392b; }
+    .breakdown-label { font-size: 0.8rem; color: #7a9bb5; }
+    .results-by-rule { text-align: left; margin-top: 20px; }
+    .results-by-rule h3 { color: #5ba3d9; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .rule-stat { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; }
+    .rule-stat-name { width: 80px; color: #a0bdd4; }
+    .rule-stat-bar-wrap { flex: 1; height: 8px; background: #1e3a52; border-radius: 4px; }
+    .rule-stat-bar { height: 100%; border-radius: 4px; background: #27ae60; }
+    .rule-stat-bar.fail { background: #c0392b; }
+    .rule-stat-count { color: #7a9bb5; width: 50px; text-align: right; }
+    .results-actions { display: flex; gap: 12px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+    .results-actions button { padding: 11px 28px; border-radius: 8px; border: 2px solid #2a4a6b; background: transparent; color: #a0bdd4; cursor: pointer; font-size: 0.9rem; transition: all .2s; }
+    .results-actions button.primary { background: #1a5276; border-color: #5ba3d9; color: #fff; }
+    .results-actions button.danger  { background: #1a3276; border-color: #e07040; color: #f0a070; }
+    .results-actions button:hover { border-color: #5ba3d9; color: #fff; }
+
+    .review-box { background: #1a0f0f; border: 1px solid #c0392b; border-radius: 10px; padding: 18px 20px; margin-top: 24px; text-align: left; }
+    .review-box h3 { color: #e87c72; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .review-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .review-tag { padding: 4px 12px; border-radius: 14px; background: #3a1515; border: 1px solid #c0392b; color: #e87c72; font-size: 0.82rem; font-weight: bold; }
+
+    .history-btn { float: right; padding: 7px 16px; border: 1px solid #2a4a6b; background: transparent; color: #7a9bb5; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all .2s; }
+    .history-btn:hover { border-color: #5ba3d9; color: #fff; }
+
+    .history-entry { background: #0a1828; border: 1px solid #2a4a6b; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; }
+    .history-entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .history-date { font-size: 0.8rem; color: #7a9bb5; }
+    .history-score { font-size: 1.3rem; font-weight: bold; }
+    .history-score.good { color: #27ae60; }
+    .history-score.avg  { color: #f39c12; }
+    .history-score.bad  { color: #c0392b; }
+    .history-detail { font-size: 0.8rem; color: #7a9bb5; margin-bottom: 8px; }
+    .history-review-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .history-review-tag { padding: 2px 9px; border-radius: 10px; background: #3a1515; border: 1px solid #8a2a2a; color: #e87c72; font-size: 0.75rem; cursor: pointer; transition: all .2s; }
+    .history-review-tag:hover { background: #5a2020; border-color: #c0392b; }
+    .history-drill-btn { margin-top: 10px; padding: 6px 14px; border-radius: 6px; border: 1px solid #e07040; background: transparent; color: #f0a070; font-size: 0.78rem; cursor: pointer; transition: all .2s; }
+    .history-drill-btn:hover { background: #3a1a0a; }
+    .history-empty { text-align: center; color: #7a9bb5; padding: 40px 0; font-size: 0.9rem; }
+    .history-clear-btn { padding: 7px 16px; border: 1px solid #6a2a2a; background: transparent; color: #e87c72; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all .2s; }
+    .history-clear-btn:hover { background: #3a1515; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>ROTR Practice Quiz</h1>
+    <div style="font-size:0.78rem; color:#4a7a9b; margin-top:3px; letter-spacing:.3px;">COLREGS · Rules of the Road · International &amp; Inland</div>
+  </div>
+  <span id="header-count" style="margin-left:auto">Loading…</span>
+</header>
+
+<div class="container">
+
+  <div id="loading">Loading questions…</div>
+
+  <div id="config-panel" style="display:none">
+
+    <div class="config-section">
+      <h2>Scope</h2>
+      <div class="scope-group">
+        <button class="scope-btn active" data-scope="BOTH">Both Int'l &amp; Inland</button>
+        <button class="scope-btn active" data-scope="INTERNATIONAL ONLY">International Only</button>
+        <button class="scope-btn active" data-scope="INLAND ONLY">Inland Only</button>
+      </div>
+    </div>
+
+    <div class="config-section">
+      <h2>Rules</h2>
+      <div class="select-links">
+        <a id="select-all-rules">Select all</a>
+        <a id="deselect-all-rules">Deselect all</a>
+      </div>
+      <div class="rules-grid" id="rules-grid"></div>
+      <div class="rules-meta" id="rules-meta"></div>
+    </div>
+
+    <div class="config-section">
+      <h2>Number of questions</h2>
+      <div class="count-row">
+        <input type="range" id="count-range" min="5" max="50" value="20" step="5">
+        <span id="count-display">20</span>
+      </div>
+    </div>
+
+    <button id="export-btn">⬇ Export CSV (Google Forms)</button>
+    <button id="history-btn" class="history-btn">History</button>
+    <button id="start-btn">START QUIZ</button>
+  </div>
+
+  <div id="history-panel" style="display:none">
+    <div class="results-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="color:#5ba3d9; font-size:1.1rem; text-transform:uppercase; letter-spacing:1px;">Quiz History</h2>
+        <button class="history-clear-btn" id="history-clear-btn">Clear history</button>
+      </div>
+      <div id="history-list"></div>
+      <div style="text-align:center; margin-top:20px;">
+        <button onclick="showConfig()" style="padding:11px 28px; border-radius:8px; border:2px solid #2a4a6b; background:transparent; color:#a0bdd4; cursor:pointer; font-size:0.9rem;">← Back to config</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="quiz-panel">
+    <div class="quiz-header">
+      <button id="back-btn" style="background:none;border:1px solid #2a4a6b;color:#7a9bb5;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.8rem;">← Config</button>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+      <span class="quiz-counter" id="quiz-counter">1 / 20</span>
+    </div>
+    <div class="question-card">
+      <div class="question-meta" id="question-meta"></div>
+      <div class="question-text" id="question-text"></div>
+      <img id="question-illustration" class="question-illustration" src="" alt="Illustration" style="display:none">
+      <div class="choices" id="choices"></div>
+      <div id="feedback"></div>
+      <div style="overflow:hidden">
+        <button id="next-btn">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="results-panel">
+    <div class="results-card">
+      <div class="results-score" id="results-score"></div>
+      <div class="results-label">Score</div>
+      <div class="results-breakdown">
+        <div class="breakdown-item">
+          <div class="breakdown-num ok" id="res-correct">0</div>
+          <div class="breakdown-label">Correct</div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-num fail" id="res-wrong">0</div>
+          <div class="breakdown-label">Wrong</div>
+        </div>
+      </div>
+      <div id="results-review-box"></div>
+      <div class="results-by-rule" id="results-by-rule"></div>
+      <div class="results-actions">
+        <button onclick="showConfig()">← Back to config</button>
+        <button class="primary" onclick="restartSameConfig()">Retry same config</button>
+        <button class="danger" id="drill-btn" style="display:none" onclick="drillWeakRules()">Drill weak rules →</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let ALL_QUESTIONS  = [];
+let selectedScopes = new Set(['BOTH', 'INTERNATIONAL ONLY', 'INLAND ONLY']);
+let selectedRules  = new Set();
+let quizQuestions  = [];
+let currentIdx     = 0;
+let answered       = false;
+let results        = { correct: 0, wrong: 0, byRule: {} };
+let lastPool       = null;
+let lastRulesToReview = [];
+
+const HISTORY_KEY = 'rotr_quiz_history';
+
+document.getElementById('loading').textContent = 'Étape 1 : fetch()…';
+fetch('rotr_questions.json')
+  .then(r => {
+    document.getElementById('loading').textContent = 'Étape 2 : réponse HTTP ' + r.status + ' — parsing JSON…';
+    return r.json();
+  })
+  .then(data => {
+    document.getElementById('loading').textContent = 'Étape 3 : ' + data.length + ' questions chargées — init…';
+    ALL_QUESTIONS = data;
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('header-count').textContent = data.length + ' questions';
+    initConfig();
+    document.getElementById('config-panel').style.display = 'block';
+  })
+  .catch((err) => {
+    document.getElementById('loading').innerHTML =
+      '<div style="color:#e87c72; max-width:500px; margin:0 auto; line-height:1.7">' +
+      '<b>Could not load questions.</b><br>' +
+      'Make sure you are opening this page via a web server (not directly as a file).<br>' +
+      '<span style="color:#7a9bb5; font-size:0.85rem">Details: ' + err + '</span></div>';
+  });
+
+function initConfig() {
+  const allRules = [...new Set(ALL_QUESTIONS.flatMap(q => q.rules))].sort((a, b) => {
+    const na = a.match(/\d+/), nb = b.match(/\d+/);
+    if (na && nb) return parseInt(na[0]) - parseInt(nb[0]);
+    return a.localeCompare(b);
+  });
+  selectedRules = new Set(allRules);
+
+  const grid = document.getElementById('rules-grid');
+  allRules.forEach(rule => {
+    const label = document.createElement('label');
+    label.className = 'rule-label checked';
+    label.innerHTML = '<input type="checkbox" class="rule-check" data-rule="' + rule + '" checked><span>' + rule + '</span>';
+    label.querySelector('input').addEventListener('change', function() {
+      if (this.checked) { selectedRules.add(rule); label.classList.add('checked'); }
+      else              { selectedRules.delete(rule); label.classList.remove('checked'); }
+      updateMeta();
+    });
+    grid.appendChild(label);
+  });
+
+  document.getElementById('select-all-rules').onclick = () => {
+    grid.querySelectorAll('.rule-check').forEach(cb => {
+      cb.checked = true; selectedRules.add(cb.dataset.rule);
+      cb.closest('label').classList.add('checked');
+    });
+    updateMeta();
+  };
+  document.getElementById('deselect-all-rules').onclick = () => {
+    grid.querySelectorAll('.rule-check').forEach(cb => {
+      cb.checked = false; selectedRules.delete(cb.dataset.rule);
+      cb.closest('label').classList.remove('checked');
+    });
+    updateMeta();
+  };
+
+  document.querySelectorAll('.scope-btn').forEach(btn => {
+    btn.onclick = () => {
+      btn.classList.toggle('active');
+      if (btn.classList.contains('active')) selectedScopes.add(btn.dataset.scope);
+      else selectedScopes.delete(btn.dataset.scope);
+      updateMeta();
+    };
+  });
+
+  const range = document.getElementById('count-range');
+  range.oninput = () => { document.getElementById('count-display').textContent = range.value; };
+
+  document.getElementById('start-btn').onclick   = startQuiz;
+  document.getElementById('export-btn').onclick  = exportCSV;
+  document.getElementById('back-btn').onclick    = showConfig;
+  document.getElementById('next-btn').onclick    = nextQuestion;
+  document.getElementById('history-btn').onclick = showHistory;
+  document.getElementById('history-clear-btn').onclick = clearHistory;
+
+  updateMeta();
+}
+
+function updateMeta() {
+  const pool = getPool();
+  const max  = pool.length;
+  const range = document.getElementById('count-range');
+  range.max = Math.max(5, max);
+  if (parseInt(range.value) > max) range.value = Math.max(5, Math.min(max, 50));
+  document.getElementById('count-display').textContent = range.value;
+  document.getElementById('rules-meta').textContent =
+    max + ' question' + (max !== 1 ? 's' : '') + ' match your selection';
+  const disabled = max === 0;
+  document.getElementById('start-btn').disabled  = disabled;
+  document.getElementById('export-btn').disabled = disabled;
+}
+
+function getPool() {
+  return ALL_QUESTIONS.filter(q => {
+    const scopeOk = selectedScopes.has(q.scope) || q.scope === 'UNKNOWN';
+    const ruleOk  = q.rules.some(r => selectedRules.has(r));
+    return scopeOk && ruleOk;
+  });
+}
+
+function startQuiz() {
+  const pool  = getPool();
+  const count = parseInt(document.getElementById('count-range').value);
+  lastPool = pool;
+  runQuiz(pool, count);
+}
+
+function restartSameConfig() {
+  if (lastPool) runQuiz(lastPool, parseInt(document.getElementById('count-range').value));
+  else showConfig();
+}
+
+function runQuiz(pool, count) {
+  quizQuestions = shuffle([...pool]).slice(0, count);
+  currentIdx = 0;
+  results = { correct: 0, wrong: 0, byRule: {} };
+  document.getElementById('config-panel').style.display  = 'none';
+  document.getElementById('results-panel').style.display = 'none';
+  document.getElementById('quiz-panel').style.display    = 'block';
+  showQuestion();
+}
+
+function showQuestion() {
+  const q  = quizQuestions[currentIdx];
+  const n  = quizQuestions.length;
+  answered = false;
+
+  document.getElementById('quiz-counter').textContent = (currentIdx + 1) + ' / ' + n;
+  document.getElementById('progress-bar').style.width = ((currentIdx / n) * 100) + '%';
+
+  const scopeKey = q.scope === 'BOTH' ? 'BOTH'
+                 : q.scope === 'INTERNATIONAL ONLY' ? 'INTERNATIONAL' : 'INLAND';
+  document.getElementById('question-meta').innerHTML =
+    '<span class="badge badge-' + scopeKey + '">' + q.scope + '</span>' +
+    q.rules.map(r => '<span class="badge badge-rule">' + r + '</span>').join('');
+
+  document.getElementById('question-text').textContent = q.question;
+
+  const illus = document.getElementById('question-illustration');
+  if (q.image) {
+    illus.src = 'images/' + q.image + '.png';
+    illus.style.display = 'block';
+  } else {
+    illus.style.display = 'none';
+    illus.src = '';
+  }
+
+  const choices = document.getElementById('choices');
+  choices.innerHTML = '';
+  ['A','B','C','D'].forEach(letter => {
+    if (!q.choices[letter]) return;
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = '<b>' + letter + '.</b> ' + escHtml(q.choices[letter]);
+    btn.onclick = () => selectAnswer(btn, letter, q);
+    choices.appendChild(btn);
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'none'; fb.className = '';
+  document.getElementById('next-btn').style.display = 'none';
+}
+
+function selectAnswer(btn, letter, q) {
+  if (answered) return;
+  answered = true;
+  const correct = letter === q.correct_answer;
+
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    b.disabled = true;
+    const l = b.querySelector('b').textContent.replace('.','');
+    if (l === q.correct_answer) b.classList.add('correct');
+    else if (l === letter && !correct) b.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+  if (correct) {
+    fb.className = 'correct';
+    fb.textContent = '\u2713 Correct!';
+    results.correct++;
+  } else {
+    fb.className = 'wrong';
+    fb.textContent = '\u2717 Wrong. Correct answer: ' + q.correct_answer + ' \u2014 ' + q.choices[q.correct_answer];
+    results.wrong++;
+  }
+
+  q.rules.forEach(r => {
+    if (!results.byRule[r]) results.byRule[r] = { correct: 0, total: 0 };
+    results.byRule[r].total++;
+    if (correct) results.byRule[r].correct++;
+  });
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.style.display = 'inline-block';
+  nextBtn.textContent = currentIdx + 1 < quizQuestions.length ? 'Next \u2192' : 'See results \u2192';
+}
+
+function nextQuestion() {
+  currentIdx++;
+  if (currentIdx < quizQuestions.length) showQuestion();
+  else showResults();
+}
+
+function showResults() {
+  document.getElementById('quiz-panel').style.display    = 'none';
+  document.getElementById('results-panel').style.display = 'block';
+
+  const total = results.correct + results.wrong;
+  const pct   = Math.round((results.correct / total) * 100);
+  document.getElementById('results-score').textContent = pct + '%';
+  document.getElementById('res-correct').textContent   = results.correct;
+  document.getElementById('res-wrong').textContent     = results.wrong;
+
+  lastRulesToReview = Object.entries(results.byRule)
+    .filter(([, s]) => s.correct < s.total)
+    .map(([r]) => r);
+
+  const reviewBox = document.getElementById('results-review-box');
+  if (lastRulesToReview.length) {
+    reviewBox.innerHTML = '<div class="review-box"><h3>Rules to review (' + lastRulesToReview.length + ')</h3>' +
+      '<div class="review-tags">' +
+      lastRulesToReview.map(r => '<span class="review-tag">' + r + '</span>').join('') +
+      '</div></div>';
+    document.getElementById('drill-btn').style.display = 'inline-block';
+  } else {
+    reviewBox.innerHTML = '<div class="review-box" style="border-color:#27ae60; background:#0d3320">' +
+      '<h3 style="color:#58d68d">Perfect — no rules to review!</h3></div>';
+    document.getElementById('drill-btn').style.display = 'none';
+  }
+
+  const ruleDiv = document.getElementById('results-by-rule');
+  const entries = Object.entries(results.byRule).sort((a, b) => {
+    const na = a[0].match(/\d+/), nb = b[0].match(/\d+/);
+    if (na && nb) return parseInt(na[0]) - parseInt(nb[0]);
+    return a[0].localeCompare(b[0]);
+  });
+  if (entries.length) {
+    ruleDiv.innerHTML = '<h3>Results by Rule</h3>';
+    entries.forEach(([rule, stat]) => {
+      const p = Math.round((stat.correct / stat.total) * 100);
+      ruleDiv.innerHTML += '<div class="rule-stat"><span class="rule-stat-name">' + rule +
+        '</span><div class="rule-stat-bar-wrap"><div class="rule-stat-bar ' + (p < 60 ? 'fail' : '') +
+        '" style="width:' + p + '%"></div></div><span class="rule-stat-count">' +
+        stat.correct + '/' + stat.total + '</span></div>';
+    });
+  }
+
+  saveQuizResult();
+}
+
+function showConfig() {
+  document.getElementById('config-panel').style.display  = 'block';
+  document.getElementById('quiz-panel').style.display    = 'none';
+  document.getElementById('results-panel').style.display = 'none';
+  document.getElementById('history-panel').style.display = 'none';
+  updateMeta();
+}
+
+function drillWeakRules() {
+  if (!lastRulesToReview.length) return;
+  const grid = document.getElementById('rules-grid');
+  grid.querySelectorAll('.rule-check').forEach(cb => {
+    const inList = lastRulesToReview.includes(cb.dataset.rule);
+    cb.checked = inList;
+    if (inList) selectedRules.add(cb.dataset.rule);
+    else        selectedRules.delete(cb.dataset.rule);
+    cb.closest('label').classList.toggle('checked', inList);
+  });
+  showConfig();
+}
+
+function drillRules(ruleList) {
+  lastRulesToReview = ruleList;
+  const grid = document.getElementById('rules-grid');
+  grid.querySelectorAll('.rule-check').forEach(cb => {
+    const inList = ruleList.includes(cb.dataset.rule);
+    cb.checked = inList;
+    if (inList) selectedRules.add(cb.dataset.rule);
+    else        selectedRules.delete(cb.dataset.rule);
+    cb.closest('label').classList.toggle('checked', inList);
+  });
+  showConfig();
+}
+
+function saveQuizResult() {
+  const total = results.correct + results.wrong;
+  const rulesToReview = Object.entries(results.byRule)
+    .filter(([, s]) => s.correct < s.total)
+    .map(([r]) => r);
+  const entry = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    correct: results.correct,
+    total,
+    pct: Math.round((results.correct / total) * 100),
+    byRule: results.byRule,
+    rulesToReview
+  };
+  const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  history.unshift(entry);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 100)));
+}
+
+function showHistory() {
+  document.getElementById('config-panel').style.display  = 'none';
+  document.getElementById('results-panel').style.display = 'none';
+  document.getElementById('history-panel').style.display = 'block';
+
+  const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  const list = document.getElementById('history-list');
+  if (!history.length) {
+    list.innerHTML = '<div class="history-empty">No quiz saved yet. Complete a quiz to see it here.</div>';
+    return;
+  }
+
+  list.innerHTML = history.map((e, i) => {
+    const d = new Date(e.date);
+    const dateStr = d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }) +
+                    ' ' + d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    const cls = e.pct >= 80 ? 'good' : e.pct >= 60 ? 'avg' : 'bad';
+    const tagsHtml = e.rulesToReview.length
+      ? e.rulesToReview.map(r =>
+          '<span class="history-review-tag" title="Drill this rule" onclick="drillRules([\''+r+'\'])">' + r + '</span>'
+        ).join('')
+      : '<span style="color:#27ae60;font-size:0.78rem">No rules to review ✓</span>';
+    const drillBtn = e.rulesToReview.length
+      ? '<button class="history-drill-btn" onclick=\'drillRules(' + JSON.stringify(e.rulesToReview) + ')\'>Drill all weak rules →</button>'
+      : '';
+    return '<div class="history-entry">' +
+      '<div class="history-entry-header">' +
+        '<span class="history-date">' + dateStr + '</span>' +
+        '<span class="history-score ' + cls + '">' + e.pct + '%</span>' +
+      '</div>' +
+      '<div class="history-detail">' + e.correct + ' / ' + e.total + ' correct</div>' +
+      '<div class="history-review-tags">' + tagsHtml + '</div>' +
+      drillBtn +
+    '</div>';
+  }).join('');
+}
+
+function clearHistory() {
+  if (!confirm('Clear all quiz history?')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  showHistory();
+}
+
+function exportCSV() {
+  const pool  = getPool();
+  if (!pool.length) return;
+  const count = parseInt(document.getElementById('count-range').value);
+  const selected = shuffle([...pool]).slice(0, count);
+
+  const BOM    = '\uFEFF';
+  const header = ['Title','Question Type','Option 1','Option 2','Option 3','Option 4','Answer Key','Rule','Scope'];
+  const rows = selected.map(q => [
+    q.question, 'Multiple choice',
+    q.choices.A || '', q.choices.B || '', q.choices.C || '', q.choices.D || '',
+    q.correct_answer, q.rules.join(', '), q.scope
+  ]);
+  const csv = BOM + [header, ...rows]
+    .map(r => r.map(cell => '"' + String(cell || '').replace(/"/g, '""') + '"').join(','))
+    .join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'rotr_quiz_' + selected.length + 'q.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

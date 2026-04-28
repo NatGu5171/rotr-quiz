@@ -1,0 +1,15 @@
+# Local tools — not part of the published site
+rotr_questions.db
+anki_import.txt
+extract_questions.py
+extract_illustrations.py
+copy_media.sh
+start_quiz.py
+start_quiz.applescript
+GITHUB_PAGES_PLAN.md
+ROTR Question Generator.html
+quiz_generator.html
+Démarrer Quiz.app/
+
+# macOS
+.DS_Store
