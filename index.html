@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ROTR Practice Quiz · Rules of the Road</title>
   <meta name="description" content="Interactive multiple-choice quiz for the COLREGS / Rules of the Road (ROTR). Practice by rule, scope, and question count.">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -238,6 +239,32 @@
     .history-empty { text-align: center; color: #7a9bb5; padding: 40px 0; font-size: 0.9rem; }
     .history-clear-btn { padding: 7px 16px; border: 1px solid #6a2a2a; background: transparent; color: #e87c72; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all .2s; }
     .history-clear-btn:hover { background: #3a1515; }
+
+    /* Auth modal */
+    .auth-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:200; align-items:center; justify-content:center; }
+    .auth-overlay.open { display:flex; }
+    .auth-modal { background:#0f2032; border:1px solid #2a4a6b; border-radius:14px; padding:32px; width:380px; max-width:92vw; position:relative; }
+    .auth-tabs { display:flex; margin-bottom:24px; border-bottom:1px solid #1e3a52; }
+    .auth-tab { flex:1; padding:10px; text-align:center; cursor:pointer; font-size:0.88rem; color:#7a9bb5; border:none; background:none; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .2s; }
+    .auth-tab.active { color:#5ba3d9; border-bottom-color:#5ba3d9; }
+    .auth-field { margin-bottom:16px; }
+    .auth-field label { display:block; font-size:0.78rem; color:#7a9bb5; margin-bottom:6px; letter-spacing:.5px; text-transform:uppercase; }
+    .auth-field input { width:100%; padding:11px 14px; background:#0a1828; border:1px solid #2a4a6b; border-radius:8px; color:#e8edf3; font-size:0.92rem; outline:none; transition:border-color .2s; }
+    .auth-field input:focus { border-color:#5ba3d9; }
+    .auth-submit { width:100%; padding:12px; background:#1a5276; border:2px solid #5ba3d9; border-radius:8px; color:#fff; font-size:0.95rem; font-weight:bold; cursor:pointer; margin-top:4px; transition:background .2s; }
+    .auth-submit:hover { background:#21618c; }
+    .auth-submit:disabled { opacity:.5; cursor:not-allowed; }
+    .auth-error { margin-top:12px; padding:10px 14px; background:#330d0d; border:1px solid #c0392b; border-radius:6px; color:#e87c72; font-size:0.83rem; display:none; }
+    .auth-info  { margin-top:12px; padding:10px 14px; background:#0d3320; border:1px solid #27ae60; border-radius:6px; color:#58d68d; font-size:0.83rem; display:none; }
+    .auth-close { position:absolute; top:14px; right:16px; background:none; border:none; color:#7a9bb5; font-size:1.2rem; cursor:pointer; padding:4px 8px; }
+    .auth-close:hover { color:#fff; }
+    /* Header auth */
+    .header-auth-btn { padding:7px 16px; border:1px solid #2a4a6b; background:transparent; color:#7a9bb5; border-radius:6px; cursor:pointer; font-size:0.8rem; transition:all .2s; white-space:nowrap; flex-shrink:0; }
+    .header-auth-btn:hover { border-color:#5ba3d9; color:#fff; }
+    .header-auth-btn.signout { border-color:#4a2a2a; color:#e87c72; }
+    .header-auth-btn.signout:hover { border-color:#c0392b; background:#3a1515; }
+    #header-user-info { display:none; align-items:center; gap:10px; }
+    #header-user-email { font-size:0.78rem; color:#7a9bb5; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   </style>
 </head>
 <body>
@@ -248,7 +275,34 @@
     <div style="font-size:0.78rem; color:#4a7a9b; margin-top:3px; letter-spacing:.3px;">COLREGS · Rules of the Road · International &amp; Inland</div>
   </div>
   <span id="header-count" style="margin-left:auto">Loading…</span>
+  <div id="header-user-info">
+    <span id="header-user-email"></span>
+    <button class="header-auth-btn signout" onclick="authSignOut()">Sign out</button>
+  </div>
+  <button id="header-signin-btn" class="header-auth-btn" onclick="showAuthModal()">Sign in</button>
 </header>
+
+<div id="auth-overlay" class="auth-overlay">
+  <div class="auth-modal">
+    <button class="auth-close" onclick="closeAuthModal()">✕</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign in</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Create account</button>
+    </div>
+    <div class="auth-field">
+      <label>Email</label>
+      <input type="email" id="auth-email" placeholder="your@email.com" autocomplete="email">
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter') authSubmit()">
+    </div>
+    <button class="auth-submit" id="auth-submit-btn" onclick="authSubmit()">Sign in</button>
+    <div class="auth-error" id="auth-error"></div>
+    <div class="auth-info"  id="auth-info"></div>
+  </div>
+</div>
 
 <div class="container">
 
@@ -346,6 +400,15 @@
 </div>
 
 <script>
+// ── Supabase ──────────────────────────────────────────────────────────────────
+const SUPABASE_URL      = 'https://nwthpkhzmrmrsdbybcis.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53dGhwa2h6bXJtcnNkYnliY2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMzk1NTksImV4cCI6MjA5MjkxNTU1OX0.kjBA1CgdZobPYAvnRrzTUtc-IgAhbn7NdwsUNbspjnA';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser  = null;
+let authMode     = 'signin';
+
+// ── Quiz state ────────────────────────────────────────────────────────────────
 let ALL_QUESTIONS  = [];
 let selectedScopes = new Set(['BOTH', 'INTERNATIONAL ONLY', 'INLAND ONLY']);
 let selectedRules  = new Set();
@@ -357,6 +420,8 @@ let lastPool       = null;
 let lastRulesToReview = [];
 
 const HISTORY_KEY = 'rotr_quiz_history';
+
+initAuth();
 
 document.getElementById('loading').textContent = 'Étape 1 : fetch()…';
 fetch('rotr_questions.json')
@@ -437,6 +502,96 @@ function initConfig() {
 
   updateMeta();
 }
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function initAuth() {
+  const { data: { session } } = await db.auth.getSession();
+  currentUser = session?.user ?? null;
+  updateAuthUI();
+  db.auth.onAuthStateChange((_e, session) => {
+    currentUser = session?.user ?? null;
+    updateAuthUI();
+  });
+}
+
+function updateAuthUI() {
+  const btn  = document.getElementById('header-signin-btn');
+  const info = document.getElementById('header-user-info');
+  if (!btn) return;
+  if (currentUser) {
+    btn.style.display  = 'none';
+    info.style.display = 'flex';
+    document.getElementById('header-user-email').textContent = currentUser.email;
+  } else {
+    btn.style.display  = 'block';
+    info.style.display = 'none';
+  }
+}
+
+function showAuthModal() {
+  authMode = 'signin';
+  document.getElementById('tab-signin').classList.add('active');
+  document.getElementById('tab-signup').classList.remove('active');
+  document.getElementById('auth-submit-btn').textContent = 'Sign in';
+  document.getElementById('auth-email').value    = '';
+  document.getElementById('auth-password').value = '';
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-info').style.display  = 'none';
+  document.getElementById('auth-overlay').classList.add('open');
+}
+
+function closeAuthModal() {
+  document.getElementById('auth-overlay').classList.remove('open');
+}
+
+function switchAuthTab(mode) {
+  authMode = mode;
+  document.getElementById('tab-signin').classList.toggle('active', mode === 'signin');
+  document.getElementById('tab-signup').classList.toggle('active', mode === 'signup');
+  document.getElementById('auth-submit-btn').textContent = mode === 'signin' ? 'Sign in' : 'Create account';
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-info').style.display  = 'none';
+}
+
+async function authSubmit() {
+  const email    = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const btn      = document.getElementById('auth-submit-btn');
+  if (!email || !password) { showAuthMsg('error', 'Please enter your email and password.'); return; }
+
+  btn.disabled    = true;
+  btn.textContent = authMode === 'signin' ? 'Signing in…' : 'Creating account…';
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-info').style.display  = 'none';
+
+  try {
+    if (authMode === 'signin') {
+      const { error } = await db.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      closeAuthModal();
+    } else {
+      const { error } = await db.auth.signUp({ email, password });
+      if (error) throw error;
+      showAuthMsg('info', 'Account created! Check your email to confirm, then sign in.');
+    }
+  } catch (err) {
+    showAuthMsg('error', err.message || 'Authentication failed.');
+  }
+  btn.disabled    = false;
+  btn.textContent = authMode === 'signin' ? 'Sign in' : 'Create account';
+}
+
+function showAuthMsg(type, msg) {
+  const el = document.getElementById(type === 'error' ? 'auth-error' : 'auth-info');
+  el.textContent    = msg;
+  el.style.display  = 'block';
+}
+
+async function authSignOut() {
+  await db.auth.signOut();
+}
+
+// ── /Auth ─────────────────────────────────────────────────────────────────────
 
 function updateMeta() {
   const pool = getPool();
@@ -645,45 +800,71 @@ function drillRules(ruleList) {
   showConfig();
 }
 
-function saveQuizResult() {
-  const total = results.correct + results.wrong;
+async function saveQuizResult() {
+  const total         = results.correct + results.wrong;
+  const pct           = Math.round((results.correct / total) * 100);
   const rulesToReview = Object.entries(results.byRule)
     .filter(([, s]) => s.correct < s.total)
     .map(([r]) => r);
-  const entry = {
-    id: Date.now(),
-    date: new Date().toISOString(),
-    correct: results.correct,
-    total,
-    pct: Math.round((results.correct / total) * 100),
-    byRule: results.byRule,
-    rulesToReview
-  };
-  const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-  history.unshift(entry);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 100)));
+
+  if (currentUser) {
+    await db.from('quiz_results').insert({
+      user_id: currentUser.id,
+      correct: results.correct,
+      total,
+      pct,
+      by_rule: results.byRule,
+      rules_to_review: rulesToReview
+    });
+  } else {
+    const entry = { id: Date.now(), date: new Date().toISOString(),
+                    correct: results.correct, total, pct,
+                    byRule: results.byRule, rulesToReview };
+    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    history.unshift(entry);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 100)));
+  }
 }
 
-function showHistory() {
+async function showHistory() {
   document.getElementById('config-panel').style.display  = 'none';
   document.getElementById('results-panel').style.display = 'none';
   document.getElementById('history-panel').style.display = 'block';
 
-  const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
   const list = document.getElementById('history-list');
+  list.innerHTML = '<div class="history-empty">Loading…</div>';
+
+  let history = [];
+  if (currentUser) {
+    const { data, error } = await db.from('quiz_results')
+      .select('*').order('created_at', { ascending: false }).limit(100);
+    if (!error && data) {
+      history = data.map(e => ({
+        id: e.id, date: e.created_at,
+        correct: e.correct, total: e.total, pct: e.pct,
+        byRule: e.by_rule, rulesToReview: e.rules_to_review
+      }));
+    }
+  } else {
+    history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  }
+
   if (!history.length) {
-    list.innerHTML = '<div class="history-empty">No quiz saved yet. Complete a quiz to see it here.</div>';
+    list.innerHTML = '<div class="history-empty">' +
+      (currentUser ? 'No quiz saved yet. Complete a quiz to see it here.'
+                   : 'Sign in to sync your history, or complete a quiz first.') +
+      '</div>';
     return;
   }
 
-  list.innerHTML = history.map((e, i) => {
+  list.innerHTML = history.map(e => {
     const d = new Date(e.date);
     const dateStr = d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }) +
                     ' ' + d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
     const cls = e.pct >= 80 ? 'good' : e.pct >= 60 ? 'avg' : 'bad';
     const tagsHtml = e.rulesToReview.length
       ? e.rulesToReview.map(r =>
-          '<span class="history-review-tag" title="Drill this rule" onclick="drillRules([\''+r+'\'])">' + r + '</span>'
+          '<span class="history-review-tag" onclick="drillRules([\''+r+'\'])">' + r + '</span>'
         ).join('')
       : '<span style="color:#27ae60;font-size:0.78rem">No rules to review ✓</span>';
     const drillBtn = e.rulesToReview.length
@@ -701,9 +882,13 @@ function showHistory() {
   }).join('');
 }
 
-function clearHistory() {
+async function clearHistory() {
   if (!confirm('Clear all quiz history?')) return;
-  localStorage.removeItem(HISTORY_KEY);
+  if (currentUser) {
+    await db.from('quiz_results').delete().eq('user_id', currentUser.id);
+  } else {
+    localStorage.removeItem(HISTORY_KEY);
+  }
   showHistory();
 }
 
