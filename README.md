@@ -2,7 +2,7 @@
 
 Interactive multiple-choice quiz for the **COLREGS / Rules of the Road (ROTR)**.
 
-**Live site:** https://nathanaelguyomard.github.io/rotr-quiz/
+**Live site:** https://natgu5171.github.io/rotr-quiz/
 
 ## Features
 
