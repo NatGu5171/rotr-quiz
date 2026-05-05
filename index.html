@@ -265,6 +265,63 @@
     .header-auth-btn.signout:hover { border-color:#c0392b; background:#3a1515; }
     #header-user-info { display:none; align-items:center; gap:10px; }
     #header-user-email { font-size:0.78rem; color:#7a9bb5; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* Mode switcher + admin link */
+    .mode-switch { display:flex; gap:6px; margin-right:6px; }
+    .mode-btn { padding:7px 14px; border:1px solid #2a4a6b; background:transparent; color:#7a9bb5; border-radius:6px; cursor:pointer; font-size:0.8rem; transition:all .2s; }
+    .mode-btn:hover { border-color:#5ba3d9; color:#fff; }
+    .mode-btn.active { border-color:#5ba3d9; background:#1a5276; color:#fff; }
+    .header-admin-btn { padding:7px 14px; border:1px solid #c08040; background:transparent; color:#e0a070; border-radius:6px; cursor:pointer; font-size:0.8rem; transition:all .2s; display:none; }
+    .header-admin-btn:hover { background:#3a2510; }
+    .header-membership { font-size:0.72rem; color:#5a7a95; padding:4px 10px; border:1px dashed #2a4a6b; border-radius:6px; cursor:pointer; }
+    .header-membership:hover { color:#a0bdd4; border-color:#5ba3d9; }
+
+    /* Generic panels (test/join/admin) */
+    .panel-card { background:#0f2032; border:1px solid #2a4a6b; border-radius:12px; padding:28px; }
+    .panel-card h2.panel-title { color:#5ba3d9; font-size:1.1rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid #1e3a52; }
+    .panel-card h3.section-title { color:#a0bdd4; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; margin:24px 0 12px; }
+    .text-input, .password-input, select.text-input { width:100%; padding:11px 14px; background:#0a1828; border:1px solid #2a4a6b; border-radius:8px; color:#e8edf3; font-size:0.92rem; outline:none; transition:border-color .2s; }
+    .text-input:focus, select.text-input:focus { border-color:#5ba3d9; }
+    .form-row { margin-bottom:14px; }
+    .form-row label { display:block; font-size:0.78rem; color:#7a9bb5; margin-bottom:6px; letter-spacing:.5px; text-transform:uppercase; }
+    .btn-primary { padding:11px 20px; background:#1a5276; border:2px solid #5ba3d9; border-radius:8px; color:#fff; font-size:0.9rem; font-weight:bold; cursor:pointer; transition:background .2s; }
+    .btn-primary:hover { background:#21618c; }
+    .btn-primary:disabled { opacity:.4; cursor:not-allowed; }
+    .btn-secondary { padding:9px 16px; border:1px solid #2a4a6b; background:transparent; color:#a0bdd4; border-radius:6px; cursor:pointer; font-size:0.85rem; transition:all .2s; }
+    .btn-secondary:hover { border-color:#5ba3d9; color:#fff; }
+    .btn-danger { padding:7px 14px; border:1px solid #6a2a2a; background:transparent; color:#e87c72; border-radius:6px; cursor:pointer; font-size:0.78rem; transition:all .2s; }
+    .btn-danger:hover { background:#3a1515; }
+    .panel-msg { padding:14px 16px; border-radius:8px; font-size:0.9rem; margin-bottom:14px; }
+    .panel-msg.error { background:#330d0d; border:1px solid #c0392b; color:#e87c72; }
+    .panel-msg.info  { background:#0d3320; border:1px solid #27ae60; color:#58d68d; }
+
+    /* Test list */
+    .test-list { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+    .test-item { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:#0a1828; border:1px solid #2a4a6b; border-radius:10px; cursor:pointer; transition:all .15s; }
+    .test-item:hover { border-color:#5ba3d9; }
+    .test-item.selected { border-color:#5ba3d9; background:#0d2840; }
+    .test-item.taken { opacity:.5; cursor:not-allowed; }
+    .test-item .test-name { color:#e8edf3; font-weight:bold; font-size:0.95rem; }
+    .test-item .badge-taken { font-size:0.72rem; padding:3px 9px; border-radius:10px; background:#1a3d1a; color:#70c070; }
+    .test-item .badge-failed { background:#3a1515; color:#e87c72; }
+
+    /* Test runtime header (no per-question feedback) */
+    #test-quiz-panel { display:none; }
+    #test-result-panel { display:none; }
+
+    /* Admin tables */
+    .admin-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    .admin-table th, .admin-table td { text-align:left; padding:9px 12px; border-bottom:1px solid #1e3a52; }
+    .admin-table th { color:#7a9bb5; font-weight:normal; text-transform:uppercase; letter-spacing:.5px; font-size:0.72rem; }
+    .admin-table td { color:#c0d8ea; }
+    .admin-table tr.passed td .status { color:#58d68d; font-weight:bold; }
+    .admin-table tr.failed td .status { color:#e87c72; font-weight:bold; }
+    .row-actions { display:flex; gap:8px; }
+    .inline-form { display:flex; gap:8px; align-items:end; flex-wrap:wrap; margin-bottom:14px; }
+    .inline-form .form-row { flex:1; min-width:160px; margin-bottom:0; }
+
+    /* Join panel */
+    #join-panel, #test-select-panel, #admin-panel { display:none; }
   </style>
 </head>
 <body>
@@ -275,7 +332,13 @@
     <div style="font-size:0.78rem; color:#4a7a9b; margin-top:3px; letter-spacing:.3px;">COLREGS · Rules of the Road · International &amp; Inland</div>
   </div>
   <span id="header-count" style="margin-left:auto">Loading…</span>
+  <div class="mode-switch" id="mode-switch" style="display:none">
+    <button class="mode-btn active" data-mode="quiz" onclick="setMode('quiz')">Quiz</button>
+    <button class="mode-btn" data-mode="test" onclick="setMode('test')">Test</button>
+  </div>
+  <button class="header-admin-btn" id="header-admin-btn" onclick="showAdmin()">Admin</button>
   <div id="header-user-info">
+    <span id="header-membership-chip" class="header-membership" onclick="showJoin()" style="display:none"></span>
     <span id="header-user-email"></span>
     <button class="header-auth-btn signout" onclick="authSignOut()">Sign out</button>
   </div>
@@ -397,6 +460,142 @@
     </div>
   </div>
 
+  <!-- ────── Join / change subgroup ────── -->
+  <div id="join-panel">
+    <div class="panel-card">
+      <h2 class="panel-title">Join your group</h2>
+      <div id="join-msg"></div>
+      <div class="form-row">
+        <label>Group</label>
+        <select id="join-group-select" class="text-input"></select>
+      </div>
+      <div class="form-row">
+        <label>Subgroup</label>
+        <select id="join-subgroup-select" class="text-input"></select>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:8px">
+        <button class="btn-primary" id="join-save-btn" onclick="saveJoin()">Save</button>
+        <button class="btn-secondary" id="join-cancel-btn" onclick="cancelJoin()" style="display:none">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────── Test mode: select a test ────── -->
+  <div id="test-select-panel">
+    <div class="panel-card">
+      <h2 class="panel-title">Official Test</h2>
+      <div id="test-select-msg"></div>
+      <div class="test-list" id="test-list"></div>
+      <div class="form-row">
+        <label>Password</label>
+        <input type="password" id="test-password" class="password-input" placeholder="Test password"
+               onkeydown="if(event.key==='Enter') startOfficialTest()">
+      </div>
+      <button class="btn-primary" id="test-start-btn" onclick="startOfficialTest()" disabled>Start test</button>
+    </div>
+  </div>
+
+  <!-- ────── Test runtime (no per-question feedback) ────── -->
+  <div id="test-quiz-panel">
+    <div class="quiz-header">
+      <span class="quiz-counter" id="test-quiz-name" style="color:#5ba3d9; font-weight:bold; font-size:0.95rem"></span>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="test-progress-bar"></div></div>
+      <span class="quiz-counter" id="test-quiz-counter">1 / 0</span>
+    </div>
+    <div class="question-card" id="test-question-card"></div>
+    <div style="display:flex; justify-content:space-between; margin-top:10px">
+      <button class="btn-secondary" id="test-prev-btn" onclick="testPrev()">← Previous</button>
+      <button class="btn-primary"   id="test-next-btn" onclick="testNext()">Next →</button>
+    </div>
+  </div>
+
+  <!-- ────── Test result ────── -->
+  <div id="test-result-panel">
+    <div class="results-card">
+      <div class="results-score" id="test-result-score"></div>
+      <div class="results-label" id="test-result-label">Score</div>
+      <p id="test-result-status" style="font-size:1.4rem; margin:18px 0; font-weight:bold"></p>
+      <p id="test-result-email-line" style="color:#7a9bb5; font-size:0.9rem"></p>
+      <div class="results-actions">
+        <button class="primary" onclick="setMode('quiz')">Back to Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────── Admin panel ────── -->
+  <div id="admin-panel">
+    <div class="panel-card">
+      <h2 class="panel-title">Admin</h2>
+
+      <!-- Global admin: groups -->
+      <div id="admin-groups-section" style="display:none">
+        <h3 class="section-title">Groups</h3>
+        <div class="inline-form">
+          <div class="form-row"><label>New group name</label>
+            <input type="text" id="admin-new-group" class="text-input" placeholder="LANTPAT AY-26 Block 0"></div>
+          <button class="btn-primary" onclick="adminCreateGroup()">Add group</button>
+        </div>
+        <div id="admin-groups-list"></div>
+      </div>
+
+      <!-- Group admin (and global admin): subgroups for the groups they admin -->
+      <div id="admin-subgroups-section" style="display:none">
+        <h3 class="section-title">Subgroups</h3>
+        <div id="admin-subgroups-by-group"></div>
+      </div>
+
+      <!-- Global admin: tests -->
+      <div id="admin-tests-section" style="display:none">
+        <h3 class="section-title">Create a test</h3>
+        <div class="form-row">
+          <label>Scope</label>
+          <div class="scope-group" id="admin-scope-group">
+            <button class="scope-btn active" type="button" data-scope="BOTH">Both Int'l &amp; Inland</button>
+            <button class="scope-btn active" type="button" data-scope="INTERNATIONAL ONLY">International Only</button>
+            <button class="scope-btn active" type="button" data-scope="INLAND ONLY">Inland Only</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Rules</label>
+          <div class="select-links">
+            <a id="admin-select-all-rules">Select all</a>
+            <a id="admin-deselect-all-rules">Deselect all</a>
+          </div>
+          <div class="rules-grid" id="admin-rules-grid"></div>
+          <div class="rules-meta" id="admin-rules-meta"></div>
+        </div>
+        <div class="form-row">
+          <label>Number of questions</label>
+          <div class="count-row">
+            <input type="range" id="admin-count-range" min="5" max="50" value="20" step="5">
+            <span id="admin-count-display">20</span>
+          </div>
+        </div>
+        <div class="inline-form">
+          <div class="form-row"><label>Test name</label>
+            <input type="text" id="admin-test-name" class="text-input" placeholder="LANTPAT Block 0 — Final"></div>
+          <div class="form-row"><label>Password</label>
+            <input type="password" id="admin-test-password" class="text-input" placeholder="••••••••"></div>
+          <button class="btn-primary" id="admin-save-test-btn" onclick="adminCreateTest()">Save test</button>
+        </div>
+
+        <h3 class="section-title">Existing tests</h3>
+        <div id="admin-tests-list"></div>
+      </div>
+
+      <!-- Subgroup admin (and above): results readout -->
+      <div id="admin-results-section" style="display:none">
+        <h3 class="section-title">Results</h3>
+        <div style="margin-bottom:10px"><button class="btn-secondary" onclick="adminExportResultsCSV()">⬇ Export CSV</button></div>
+        <div id="admin-results-table"></div>
+      </div>
+
+      <div style="margin-top:24px; text-align:center">
+        <button class="btn-secondary" onclick="setMode(currentMode)">← Back</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -423,19 +622,26 @@ const HISTORY_KEY = 'rotr_quiz_history';
 
 initAuth();
 
-document.getElementById('loading').textContent = 'Étape 1 : fetch()…';
+document.getElementById('loading').textContent = 'Step 1: fetching questions…';
 fetch('rotr_questions.json')
   .then(r => {
-    document.getElementById('loading').textContent = 'Étape 2 : réponse HTTP ' + r.status + ' — parsing JSON…';
+    document.getElementById('loading').textContent = 'Step 2: HTTP ' + r.status + ' — parsing JSON…';
     return r.json();
   })
   .then(data => {
-    document.getElementById('loading').textContent = 'Étape 3 : ' + data.length + ' questions chargées — init…';
+    document.getElementById('loading').textContent = 'Step 3: ' + data.length + ' questions loaded — initializing…';
     ALL_QUESTIONS = data;
     document.getElementById('loading').style.display = 'none';
     document.getElementById('header-count').textContent = data.length + ' questions';
     initConfig();
-    document.getElementById('config-panel').style.display = 'block';
+    // Only auto-show the quiz config when not currently being forced into a different panel
+    // (forced join after first sign-in, in-progress test, admin view).
+    const forcedPanels = ['join-panel','test-quiz-panel','test-result-panel','admin-panel'];
+    const inForced = forcedPanels.some(id => {
+      const el = document.getElementById(id);
+      return el && el.style.display && el.style.display !== 'none';
+    });
+    if (!inForced) showConfig();
   })
   .catch((err) => {
     document.getElementById('loading').innerHTML =
@@ -481,7 +687,7 @@ function initConfig() {
     updateMeta();
   };
 
-  document.querySelectorAll('.scope-btn').forEach(btn => {
+  document.querySelectorAll('#config-panel .scope-btn').forEach(btn => {
     btn.onclick = () => {
       btn.classList.toggle('active');
       if (btn.classList.contains('active')) selectedScopes.add(btn.dataset.scope);
@@ -507,24 +713,41 @@ function initConfig() {
 async function initAuth() {
   const { data: { session } } = await db.auth.getSession();
   currentUser = session?.user ?? null;
+  await loadMyContext();
   updateAuthUI();
-  db.auth.onAuthStateChange((_e, session) => {
+  await postAuthGate();
+  db.auth.onAuthStateChange(async (_e, session) => {
     currentUser = session?.user ?? null;
+    await loadMyContext();
     updateAuthUI();
+    await postAuthGate();
   });
 }
 
 function updateAuthUI() {
   const btn  = document.getElementById('header-signin-btn');
   const info = document.getElementById('header-user-info');
+  const ms   = document.getElementById('mode-switch');
+  const ab   = document.getElementById('header-admin-btn');
+  const chip = document.getElementById('header-membership-chip');
   if (!btn) return;
   if (currentUser) {
     btn.style.display  = 'none';
     info.style.display = 'flex';
     document.getElementById('header-user-email').textContent = currentUser.email;
+    ms.style.display = 'flex';
+    ab.style.display = (currentRole === 'global_admin' || myGrants.length > 0) ? 'inline-block' : 'none';
+    if (myMembership && myMembership.subgroup_name) {
+      chip.style.display = 'inline-block';
+      chip.textContent = myMembership.group_name + ' / ' + myMembership.subgroup_name + ' ✎';
+    } else {
+      chip.style.display = 'none';
+    }
   } else {
     btn.style.display  = 'block';
     info.style.display = 'none';
+    ms.style.display   = 'none';
+    ab.style.display   = 'none';
   }
 }
 
@@ -767,11 +990,19 @@ function showResults() {
 }
 
 function showConfig() {
+  hideAllPanels();
+  if (currentMode === 'test') { showTestSelect(); return; }
   document.getElementById('config-panel').style.display  = 'block';
-  document.getElementById('quiz-panel').style.display    = 'none';
-  document.getElementById('results-panel').style.display = 'none';
-  document.getElementById('history-panel').style.display = 'none';
   updateMeta();
+}
+
+function hideAllPanels() {
+  ['config-panel','quiz-panel','results-panel','history-panel',
+   'join-panel','test-select-panel','test-quiz-panel','test-result-panel',
+   'admin-panel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
 }
 
 function drillWeakRules() {
@@ -859,8 +1090,8 @@ async function showHistory() {
 
   list.innerHTML = history.map(e => {
     const d = new Date(e.date);
-    const dateStr = d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }) +
-                    ' ' + d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    const dateStr = d.toLocaleDateString('en-US', { day:'2-digit', month:'short', year:'numeric' }) +
+                    ' ' + d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
     const cls = e.pct >= 80 ? 'good' : e.pct >= 60 ? 'avg' : 'bad';
     const tagsHtml = e.rulesToReview.length
       ? e.rulesToReview.map(r =>
@@ -926,6 +1157,766 @@ function shuffle(arr) {
 
 function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Test mode + groups/subgroups + admin
+// ─────────────────────────────────────────────────────────────────────────────
+
+const FUNCTIONS_URL = SUPABASE_URL.replace('.supabase.co', '.functions.supabase.co');
+
+let currentMode  = 'quiz';   // 'quiz' | 'test'
+let currentRole  = 'member'; // 'global_admin' | 'member' (admin scopes live in myGrants)
+let myMembership = null;     // { subgroup_id, subgroup_name, group_id, group_name }
+let myGrants     = [];       // [{ scope_type, scope_id, group_id_resolved, name }]
+
+// Test runtime state
+let testSession  = null;     // { token, test_name, questions, answers: Map<id, choice>, idx }
+
+// Admin: scope/rules/count for test creation (independent of quiz state)
+let adminSelectedScopes = new Set(['BOTH','INTERNATIONAL ONLY','INLAND ONLY']);
+let adminSelectedRules  = new Set();
+
+// ── Context loading ─────────────────────────────────────────────────────────
+
+async function loadMyContext() {
+  myMembership = null;
+  myGrants     = [];
+  currentRole  = 'member';
+  if (!currentUser) return;
+
+  currentRole = currentUser.app_metadata?.role === 'global_admin' ? 'global_admin' : 'member';
+
+  // Membership
+  const { data: mem } = await db.from('user_memberships')
+    .select('subgroup_id, subgroups:subgroup_id(name, group_id, groups:group_id(name))')
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+  if (mem && mem.subgroups) {
+    myMembership = {
+      subgroup_id:   mem.subgroup_id,
+      subgroup_name: mem.subgroups.name,
+      group_id:      mem.subgroups.group_id,
+      group_name:    mem.subgroups.groups?.name ?? null,
+    };
+  }
+
+  // Grants
+  const { data: grants } = await db.from('admin_grants')
+    .select('id, scope_type, scope_id')
+    .eq('user_id', currentUser.id);
+  myGrants = grants ?? [];
+}
+
+async function postAuthGate() {
+  // Force members into #join-panel after sign-up; admins can bootstrap groups first.
+  if (currentUser && !myMembership && !isAdminAnywhere()) {
+    showJoin(/*forced*/ true);
+    return;
+  }
+  // Otherwise, render the panel for the current mode
+  if (currentUser) showConfig();
+}
+
+// ── Mode switch ─────────────────────────────────────────────────────────────
+
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  if (mode === 'quiz') {
+    showConfig();
+  } else {
+    showTestSelect();
+  }
+}
+
+// ── Join / change subgroup ─────────────────────────────────────────────────
+
+async function showJoin(forced) {
+  if (!currentUser) { showAuthModal(); return; }
+  hideAllPanels();
+  const panel  = document.getElementById('join-panel');
+  panel.style.display = 'block';
+  document.getElementById('join-cancel-btn').style.display = forced ? 'none' : 'inline-block';
+
+  const msg = document.getElementById('join-msg');
+  msg.innerHTML = forced
+    ? '<div class="panel-msg info">Welcome! Pick your group and subgroup to continue.</div>'
+    : '';
+
+  const { data: groups } = await db.from('groups').select('id, name').order('name');
+  const groupList = groups ?? [];
+  const gSel = document.getElementById('join-group-select');
+  gSel.innerHTML = '<option value="">— Select a group —</option>' +
+    groupList.map(g => `<option value="${g.id}">${escHtml(g.name)}</option>`).join('');
+  document.getElementById('join-save-btn').disabled = groupList.length === 0;
+  if (groupList.length === 0) {
+    msg.innerHTML = '<div class="panel-msg error">No groups have been created yet. Ask an admin to create one.</div>';
+  }
+  if (myMembership) gSel.value = myMembership.group_id ?? '';
+  gSel.onchange = () => populateJoinSubgroups(gSel.value);
+  populateJoinSubgroups(gSel.value);
+}
+
+async function populateJoinSubgroups(group_id) {
+  const sSel = document.getElementById('join-subgroup-select');
+  if (!group_id) { sSel.innerHTML = '<option value="">— Select a group first —</option>'; return; }
+  const { data: subs } = await db.from('subgroups').select('id, name').eq('group_id', group_id).order('name');
+  sSel.innerHTML = '<option value="">— Select a subgroup —</option>' +
+    (subs ?? []).map(s => `<option value="${s.id}">${escHtml(s.name)}</option>`).join('');
+  if (myMembership) sSel.value = myMembership.subgroup_id ?? '';
+}
+
+function cancelJoin() { showConfig(); }
+
+async function saveJoin() {
+  const subgroup_id = document.getElementById('join-subgroup-select').value;
+  if (!subgroup_id) {
+    document.getElementById('join-msg').innerHTML =
+      '<div class="panel-msg error">Please pick a subgroup.</div>';
+    return;
+  }
+  const btn = document.getElementById('join-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const { error } = await db.from('user_memberships')
+    .upsert({ user_id: currentUser.id, subgroup_id }, { onConflict: 'user_id' });
+  btn.disabled = false; btn.textContent = 'Save';
+  if (error) {
+    document.getElementById('join-msg').innerHTML =
+      `<div class="panel-msg error">${escHtml(error.message)}</div>`;
+    return;
+  }
+  await loadMyContext();
+  updateAuthUI();
+  showConfig();
+}
+
+// ── Test mode: select / start ──────────────────────────────────────────────
+
+async function showTestSelect() {
+  if (!currentUser) { showAuthModal(); return; }
+  if (!myMembership) { showJoin(true); return; }
+  hideAllPanels();
+  document.getElementById('test-select-panel').style.display = 'block';
+  document.getElementById('test-select-msg').innerHTML = '';
+  document.getElementById('test-password').value = '';
+  document.getElementById('test-start-btn').disabled = true;
+  await loadTestList();
+}
+
+let _selectedTestId = null;
+
+async function loadTestList() {
+  const list = document.getElementById('test-list');
+  list.innerHTML = '<div style="color:#7a9bb5; padding:14px">Loading tests…</div>';
+
+  const [{ data: tests }, { data: taken }] = await Promise.all([
+    db.from('tests').select('id, name').order('name'),
+    db.from('test_results').select('test_id, pct, passed').eq('user_id', currentUser.id),
+  ]);
+
+  if (!tests || tests.length === 0) {
+    list.innerHTML = '<div style="color:#7a9bb5; padding:14px">No tests have been created yet.</div>';
+    return;
+  }
+  const takenMap = new Map((taken ?? []).map(r => [r.test_id, r]));
+  _selectedTestId = null;
+
+  list.innerHTML = '';
+  tests.forEach(t => {
+    const t0 = takenMap.get(t.id);
+    const item = document.createElement('div');
+    item.className = 'test-item' + (t0 ? ' taken' : '');
+    item.innerHTML = `<span class="test-name">${escHtml(t.name)}</span>` +
+      (t0
+        ? `<span class="badge-taken ${t0.passed ? '' : 'badge-failed'}">Already taken — ${Number(t0.pct).toFixed(0)}% ${t0.passed ? '✓' : '✗'}</span>`
+        : '<span style="color:#7a9bb5; font-size:0.78rem">Not taken</span>');
+    if (!t0) {
+      item.onclick = () => {
+        document.querySelectorAll('#test-list .test-item').forEach(x => x.classList.remove('selected'));
+        item.classList.add('selected');
+        _selectedTestId = t.id;
+        document.getElementById('test-start-btn').disabled = !document.getElementById('test-password').value;
+      };
+    }
+    list.appendChild(item);
+  });
+
+  document.getElementById('test-password').oninput = () => {
+    document.getElementById('test-start-btn').disabled = !_selectedTestId || !document.getElementById('test-password').value;
+  };
+}
+
+async function callFn(name, body) {
+  const { data: { session } } = await db.auth.getSession();
+  const r = await fetch(`${FUNCTIONS_URL}/${name}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + (session?.access_token ?? ''),
+      'apikey': SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify(body ?? {}),
+  });
+  let payload = null;
+  try { payload = await r.json(); } catch { /* */ }
+  if (!r.ok) {
+    const msg = (payload && payload.error) ? payload.error : `HTTP ${r.status}`;
+    throw new Error(msg);
+  }
+  return payload;
+}
+
+async function startOfficialTest() {
+  const password = document.getElementById('test-password').value;
+  if (!_selectedTestId || !password) return;
+  const btn = document.getElementById('test-start-btn');
+  btn.disabled = true; btn.textContent = 'Starting…';
+  document.getElementById('test-select-msg').innerHTML = '';
+  try {
+    const out = await callFn('start-test', { test_id: _selectedTestId, password });
+    testSession = {
+      token:     out.token,
+      test_name: out.test_name,
+      questions: out.questions,
+      answers:   new Map(),
+      idx:       0,
+    };
+    hideAllPanels();
+    document.getElementById('test-quiz-panel').style.display = 'block';
+    document.getElementById('test-quiz-name').textContent = out.test_name;
+    showTestQuestion();
+  } catch (e) {
+    document.getElementById('test-select-msg').innerHTML =
+      `<div class="panel-msg error">${escHtml(e.message)}</div>`;
+    if (/already taken/i.test(e.message)) await loadTestList();
+  }
+  btn.disabled = false; btn.textContent = 'Start test';
+}
+
+function showTestQuestion() {
+  const q = testSession.questions[testSession.idx];
+  const n = testSession.questions.length;
+  document.getElementById('test-quiz-counter').textContent = (testSession.idx + 1) + ' / ' + n;
+  document.getElementById('test-progress-bar').style.width = ((testSession.idx / n) * 100) + '%';
+
+  const card = document.getElementById('test-question-card');
+  const scopeKey = q.scope === 'BOTH' ? 'BOTH'
+                 : q.scope === 'INTERNATIONAL ONLY' ? 'INTERNATIONAL' : 'INLAND';
+  const meta = '<span class="badge badge-' + scopeKey + '">' + q.scope + '</span>' +
+    (q.rules || []).map(r => '<span class="badge badge-rule">' + escHtml(r) + '</span>').join('');
+  const img = q.image
+    ? `<img class="question-illustration" src="images/${escHtml(q.image)}.png" alt="">`
+    : '';
+  const chosen = testSession.answers.get(q.id);
+  const choices = ['A','B','C','D'].filter(l => q.choices[l]).map(l => {
+    const sel = chosen === l ? ' selected-choice' : '';
+    return `<button type="button" class="choice-btn${sel}" data-choice="${l}" onclick="testPickAnswer('${l}')">
+              <b>${l}.</b> ${escHtml(q.choices[l])}
+            </button>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="question-meta">${meta}</div>
+    <div class="question-text">${escHtml(q.question)}</div>
+    ${img}
+    <div class="choices">${choices}</div>
+  `;
+  // highlight selection
+  if (chosen) {
+    const el = card.querySelector(`.choice-btn[data-choice="${chosen}"]`);
+    if (el) el.style.borderColor = '#5ba3d9', el.style.background = '#0d2840', el.style.color = '#fff';
+  }
+
+  document.getElementById('test-prev-btn').disabled = testSession.idx === 0;
+  document.getElementById('test-next-btn').textContent =
+    testSession.idx + 1 === n ? 'Submit test' : 'Next →';
+}
+
+function testPickAnswer(choice) {
+  const q = testSession.questions[testSession.idx];
+  testSession.answers.set(q.id, choice);
+  showTestQuestion();
+}
+
+function testPrev() {
+  if (testSession.idx > 0) { testSession.idx--; showTestQuestion(); }
+}
+
+async function testNext() {
+  const last = testSession.idx + 1 === testSession.questions.length;
+  if (!last) { testSession.idx++; showTestQuestion(); return; }
+
+  // Submit
+  const btn = document.getElementById('test-next-btn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  const answers = testSession.questions.map(q => ({ id: q.id, choice: testSession.answers.get(q.id) ?? null }));
+  try {
+    const out = await callFn('submit-test', { token: testSession.token, answers });
+    showTestResult(out);
+  } catch (e) {
+    btn.disabled = false; btn.textContent = 'Submit test';
+    alert('Submission failed: ' + e.message);
+  }
+}
+
+function showTestResult(out) {
+  hideAllPanels();
+  document.getElementById('test-result-panel').style.display = 'block';
+  document.getElementById('test-result-score').textContent = out.pct.toFixed(0) + '%';
+  document.getElementById('test-result-label').textContent = out.correct + ' / ' + out.total + ' correct';
+  const status = document.getElementById('test-result-status');
+  status.textContent = out.passed ? 'PASSED ✓' : 'FAILED ✗';
+  status.style.color = out.passed ? '#27ae60' : '#c0392b';
+  const emailLine = document.getElementById('test-result-email-line');
+  if (out.email_sent === false) {
+    emailLine.textContent = 'Result recorded. Email delivery failed; contact the instructor.';
+    emailLine.style.color = '#e87c72';
+  } else {
+    emailLine.textContent = 'An email has been sent to ' + currentUser.email + '.';
+    emailLine.style.color = '#7a9bb5';
+  }
+  testSession = null;
+}
+
+// ── Admin ──────────────────────────────────────────────────────────────────
+
+function isAdminAnywhere() {
+  return currentRole === 'global_admin' || myGrants.length > 0;
+}
+
+async function showAdmin() {
+  if (!isAdminAnywhere()) return;
+  hideAllPanels();
+  document.getElementById('admin-panel').style.display = 'block';
+
+  const isGlobal = currentRole === 'global_admin';
+  const groupGrants    = myGrants.filter(g => g.scope_type === 'group');
+  const subgroupGrants = myGrants.filter(g => g.scope_type === 'subgroup');
+
+  document.getElementById('admin-groups-section').style.display = isGlobal ? 'block' : 'none';
+  document.getElementById('admin-tests-section').style.display  = isGlobal ? 'block' : 'none';
+  document.getElementById('admin-subgroups-section').style.display =
+    (isGlobal || groupGrants.length > 0) ? 'block' : 'none';
+  document.getElementById('admin-results-section').style.display =
+    (isGlobal || groupGrants.length > 0 || subgroupGrants.length > 0) ? 'block' : 'none';
+
+  if (isGlobal) {
+    await renderGlobalAdminGroups();
+    initAdminTestForm();
+    await renderAdminTestsList();
+  }
+  if (isGlobal || groupGrants.length > 0) {
+    await renderAdminSubgroupsForGroups();
+  }
+  if (isGlobal || groupGrants.length > 0 || subgroupGrants.length > 0) {
+    await renderAdminResults();
+  }
+}
+
+// ── Admin: groups (global only) ───────────────────────────────────────────
+
+async function adminCreateGroup() {
+  const nameEl = document.getElementById('admin-new-group');
+  const name = nameEl.value.trim();
+  if (!name) return;
+  const { error } = await db.from('groups').insert({ name });
+  if (error) { alert(error.message); return; }
+  nameEl.value = '';
+  await renderGlobalAdminGroups();
+  await renderAdminSubgroupsForGroups();
+}
+
+async function adminDeleteGroup(id, name) {
+  if (!confirm(`Delete group "${name}" and all its subgroups + admin grants? Test results will keep their snapshotted names.`)) return;
+  const { error } = await db.from('groups').delete().eq('id', id);
+  if (error) { alert(error.message); return; }
+  await renderGlobalAdminGroups();
+  await renderAdminSubgroupsForGroups();
+}
+
+async function adminRenameGroup(id) {
+  const name = prompt('New group name?');
+  if (!name) return;
+  const { error } = await db.from('groups').update({ name: name.trim() }).eq('id', id);
+  if (error) { alert(error.message); return; }
+  await renderGlobalAdminGroups();
+  await renderAdminSubgroupsForGroups();
+}
+
+async function adminAddGroupAdmin(group_id) {
+  const email = prompt('Email of the user to promote to group admin?');
+  if (!email) return;
+  try {
+    const { id } = await callFn('lookup-user-by-email', { email: email.trim() });
+    const { error } = await db.from('admin_grants').insert({
+      user_id: id, scope_type: 'group', scope_id: group_id, granted_by: currentUser.id,
+    });
+    if (error) throw error;
+    await renderGlobalAdminGroups();
+  } catch (e) { alert(e.message); }
+}
+
+async function adminRemoveGrant(grant_id) {
+  if (!confirm('Remove this admin grant?')) return;
+  const { error } = await db.from('admin_grants').delete().eq('id', grant_id);
+  if (error) { alert(error.message); return; }
+  await renderGlobalAdminGroups();
+  await renderAdminSubgroupsForGroups();
+}
+
+async function renderGlobalAdminGroups() {
+  const container = document.getElementById('admin-groups-list');
+  const { data: groups } = await db.from('groups').select('id, name').order('name');
+  if (!groups || groups.length === 0) {
+    container.innerHTML = '<div style="color:#7a9bb5; padding:8px">No groups yet.</div>';
+    return;
+  }
+  // fetch all group admin grants for these groups
+  const { data: grants } = await db.from('admin_grants')
+    .select('id, user_id, scope_id')
+    .eq('scope_type', 'group')
+    .in('scope_id', groups.map(g => g.id));
+
+  // resolve emails of granted users
+  const userIds = [...new Set((grants ?? []).map(g => g.user_id))];
+  const userMap = await fetchUserEmails(userIds);
+
+  container.innerHTML = groups.map(g => {
+    const gAdmins = (grants ?? []).filter(x => x.scope_id === g.id);
+    const adminRows = gAdmins.length
+      ? gAdmins.map(a =>
+          `<li style="margin:4px 0">${escHtml(userMap.get(a.user_id) ?? a.user_id)}
+             <button class="btn-danger" style="margin-left:6px" onclick="adminRemoveGrant('${a.id}')">Remove</button>
+           </li>`).join('')
+      : '<li style="color:#7a9bb5">No group admins.</li>';
+    return `<div style="background:#0a1828; border:1px solid #2a4a6b; border-radius:10px; padding:14px 18px; margin-bottom:10px">
+      <div style="display:flex; justify-content:space-between; align-items:center">
+        <strong>${escHtml(g.name)}</strong>
+        <div class="row-actions">
+          <button class="btn-secondary" onclick="adminRenameGroup('${g.id}')">Rename</button>
+          <button class="btn-danger" onclick="adminDeleteGroup('${g.id}','${escHtml(g.name).replace(/'/g, '\\\'')}')">Delete</button>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <div style="font-size:0.78rem; color:#7a9bb5; margin-bottom:4px">GROUP ADMINS</div>
+        <ul style="list-style:none; padding:0; font-size:0.85rem">${adminRows}</ul>
+        <button class="btn-secondary" onclick="adminAddGroupAdmin('${g.id}')">+ Add group admin</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Admin: subgroups (global + group admins) ──────────────────────────────
+
+async function renderAdminSubgroupsForGroups() {
+  const container = document.getElementById('admin-subgroups-by-group');
+  // Determine which groups the user can manage subgroups of
+  const isGlobal = currentRole === 'global_admin';
+  let { data: groups } = await db.from('groups').select('id, name').order('name');
+  groups = groups ?? [];
+  if (!isGlobal) {
+    const allowed = new Set(myGrants.filter(g => g.scope_type === 'group').map(g => g.scope_id));
+    groups = groups.filter(g => allowed.has(g.id));
+  }
+  if (groups.length === 0) {
+    container.innerHTML = '<div style="color:#7a9bb5; padding:8px">No groups under your administration.</div>';
+    return;
+  }
+
+  // Pull all subgroups for those groups in one go
+  const { data: subs } = await db.from('subgroups')
+    .select('id, name, group_id')
+    .in('group_id', groups.map(g => g.id))
+    .order('name');
+
+  // Pull subgroup admin grants
+  const { data: grants } = await db.from('admin_grants')
+    .select('id, user_id, scope_id')
+    .eq('scope_type', 'subgroup')
+    .in('scope_id', (subs ?? []).map(s => s.id).concat(['00000000-0000-0000-0000-000000000000']));
+
+  const userIds = [...new Set((grants ?? []).map(g => g.user_id))];
+  const userMap = await fetchUserEmails(userIds);
+
+  container.innerHTML = groups.map(g => {
+    const groupSubs = (subs ?? []).filter(s => s.group_id === g.id);
+    const subRows = groupSubs.map(s => {
+      const sAdmins = (grants ?? []).filter(x => x.scope_id === s.id);
+      const adminLis = sAdmins.length
+        ? sAdmins.map(a => `<li style="margin:3px 0">${escHtml(userMap.get(a.user_id) ?? a.user_id)}
+             <button class="btn-danger" style="margin-left:6px" onclick="adminRemoveGrant('${a.id}')">Remove</button>
+           </li>`).join('')
+        : '<li style="color:#7a9bb5">No subgroup admins.</li>';
+      return `<div style="background:#0a1828; border:1px solid #2a4a6b; border-radius:8px; padding:10px 14px; margin:8px 0">
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <strong>${escHtml(s.name)}</strong>
+          <div class="row-actions">
+            <button class="btn-secondary" onclick="adminRenameSubgroup('${s.id}')">Rename</button>
+            <button class="btn-danger" onclick="adminDeleteSubgroup('${s.id}','${escHtml(s.name).replace(/'/g, '\\\'')}')">Delete</button>
+          </div>
+        </div>
+        <div style="margin-top:8px">
+          <div style="font-size:0.72rem; color:#7a9bb5">SUBGROUP ADMINS</div>
+          <ul style="list-style:none; padding:0; font-size:0.82rem">${adminLis}</ul>
+          <button class="btn-secondary" onclick="adminAddSubgroupAdmin('${s.id}')">+ Add subgroup admin</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div style="margin-bottom:18px">
+      <div style="font-weight:bold; color:#5ba3d9; margin-bottom:6px">${escHtml(g.name)}</div>
+      <div class="inline-form">
+        <div class="form-row"><label>New subgroup name</label>
+          <input type="text" class="text-input" id="new-sub-${g.id}" placeholder="Pennant 1"></div>
+        <button class="btn-primary" onclick="adminCreateSubgroup('${g.id}')">Add subgroup</button>
+      </div>
+      ${subRows || '<div style="color:#7a9bb5">No subgroups.</div>'}
+    </div>`;
+  }).join('');
+}
+
+async function adminCreateSubgroup(group_id) {
+  const inp = document.getElementById('new-sub-' + group_id);
+  const name = inp.value.trim();
+  if (!name) return;
+  const { error } = await db.from('subgroups').insert({ group_id, name });
+  if (error) { alert(error.message); return; }
+  inp.value = '';
+  await renderAdminSubgroupsForGroups();
+}
+
+async function adminRenameSubgroup(id) {
+  const name = prompt('New subgroup name?');
+  if (!name) return;
+  const { error } = await db.from('subgroups').update({ name: name.trim() }).eq('id', id);
+  if (error) { alert(error.message); return; }
+  await renderAdminSubgroupsForGroups();
+}
+
+async function adminDeleteSubgroup(id, name) {
+  if (!confirm(`Delete subgroup "${name}"?`)) return;
+  const { error } = await db.from('subgroups').delete().eq('id', id);
+  if (error) { alert(error.message); return; }
+  await renderAdminSubgroupsForGroups();
+}
+
+async function adminAddSubgroupAdmin(subgroup_id) {
+  const email = prompt('Email of the user to promote to subgroup admin?');
+  if (!email) return;
+  try {
+    const { id } = await callFn('lookup-user-by-email', { email: email.trim() });
+    const { error } = await db.from('admin_grants').insert({
+      user_id: id, scope_type: 'subgroup', scope_id: subgroup_id, granted_by: currentUser.id,
+    });
+    if (error) throw error;
+    await renderAdminSubgroupsForGroups();
+  } catch (e) { alert(e.message); }
+}
+
+// ── Admin: tests (global only) ────────────────────────────────────────────
+
+function initAdminTestForm() {
+  if (document.getElementById('admin-rules-grid').dataset.inited === '1') return;
+  const allRules = [...new Set(ALL_QUESTIONS.flatMap(q => q.rules))].sort((a, b) => {
+    const na = a.match(/\d+/), nb = b.match(/\d+/);
+    if (na && nb) return parseInt(na[0]) - parseInt(nb[0]);
+    return a.localeCompare(b);
+  });
+  adminSelectedRules = new Set(allRules);
+
+  const grid = document.getElementById('admin-rules-grid');
+  grid.innerHTML = '';
+  allRules.forEach(rule => {
+    const label = document.createElement('label');
+    label.className = 'rule-label checked';
+    label.innerHTML = '<input type="checkbox" class="admin-rule-check" data-rule="' + rule + '" checked><span>' + rule + '</span>';
+    label.querySelector('input').addEventListener('change', function() {
+      if (this.checked) { adminSelectedRules.add(rule); label.classList.add('checked'); }
+      else              { adminSelectedRules.delete(rule); label.classList.remove('checked'); }
+      updateAdminMeta();
+    });
+    grid.appendChild(label);
+  });
+  document.getElementById('admin-select-all-rules').onclick = () => {
+    grid.querySelectorAll('.admin-rule-check').forEach(cb => {
+      cb.checked = true; adminSelectedRules.add(cb.dataset.rule);
+      cb.closest('label').classList.add('checked');
+    });
+    updateAdminMeta();
+  };
+  document.getElementById('admin-deselect-all-rules').onclick = () => {
+    grid.querySelectorAll('.admin-rule-check').forEach(cb => {
+      cb.checked = false; adminSelectedRules.delete(cb.dataset.rule);
+      cb.closest('label').classList.remove('checked');
+    });
+    updateAdminMeta();
+  };
+  document.querySelectorAll('#admin-scope-group .scope-btn').forEach(btn => {
+    btn.onclick = (ev) => {
+      ev.preventDefault();
+      btn.classList.toggle('active');
+      if (btn.classList.contains('active')) adminSelectedScopes.add(btn.dataset.scope);
+      else adminSelectedScopes.delete(btn.dataset.scope);
+      updateAdminMeta();
+    };
+  });
+  const range = document.getElementById('admin-count-range');
+  range.oninput = () => { document.getElementById('admin-count-display').textContent = range.value; };
+  grid.dataset.inited = '1';
+  updateAdminMeta();
+}
+
+function getAdminPool() {
+  return ALL_QUESTIONS.filter(q => {
+    const scopeOk = adminSelectedScopes.has(q.scope) || q.scope === 'UNKNOWN';
+    const ruleOk  = q.rules.some(r => adminSelectedRules.has(r));
+    return scopeOk && ruleOk;
+  });
+}
+
+function updateAdminMeta() {
+  const pool = getAdminPool();
+  const max = pool.length;
+  const range = document.getElementById('admin-count-range');
+  range.max = Math.max(5, max);
+  if (parseInt(range.value) > max) range.value = Math.max(5, Math.min(max, 50));
+  document.getElementById('admin-count-display').textContent = range.value;
+  document.getElementById('admin-rules-meta').textContent =
+    max + ' question' + (max !== 1 ? 's' : '') + ' available';
+  document.getElementById('admin-save-test-btn').disabled = max === 0;
+}
+
+async function adminCreateTest() {
+  const name = document.getElementById('admin-test-name').value.trim();
+  const password = document.getElementById('admin-test-password').value;
+  if (!name || !password) { alert('Please provide a test name and password.'); return; }
+  const pool = getAdminPool();
+  const count = parseInt(document.getElementById('admin-count-range').value);
+  if (pool.length < count) { alert('Not enough questions for that count.'); return; }
+  const question_ids = shuffle([...pool]).slice(0, count).map(q => q.id);
+
+  const btn = document.getElementById('admin-save-test-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await callFn('admin-create-test', {
+      name, password,
+      scope: [...adminSelectedScopes],
+      rules: [...adminSelectedRules],
+      question_ids,
+    });
+    document.getElementById('admin-test-name').value = '';
+    document.getElementById('admin-test-password').value = '';
+    await renderAdminTestsList();
+    alert('Test "' + name + '" saved (' + question_ids.length + ' questions).');
+  } catch (e) {
+    alert(e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Save test';
+  updateAdminMeta();
+}
+
+async function renderAdminTestsList() {
+  const container = document.getElementById('admin-tests-list');
+  const { data: tests, error } = await db.from('tests').select('id, name, created_at').order('created_at', { ascending: false });
+  if (error) { container.innerHTML = `<div class="panel-msg error">${escHtml(error.message)}</div>`; return; }
+  if (!tests || tests.length === 0) {
+    container.innerHTML = '<div style="color:#7a9bb5; padding:8px">No tests yet.</div>';
+    return;
+  }
+  container.innerHTML = '<table class="admin-table"><thead><tr><th>Name</th><th>Created</th><th></th></tr></thead><tbody>' +
+    tests.map(t => `<tr>
+      <td>${escHtml(t.name)}</td>
+      <td>${new Date(t.created_at).toLocaleDateString()}</td>
+      <td><button class="btn-danger" onclick="adminDeleteTest('${t.id}','${escHtml(t.name).replace(/'/g, '\\\'')}')">Delete</button></td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+async function adminDeleteTest(id, name) {
+  if (!confirm(`Delete test "${name}" and all its results?`)) return;
+  const { error } = await db.from('tests').delete().eq('id', id);
+  if (error) { alert(error.message); return; }
+  await renderAdminTestsList();
+}
+
+// ── Admin: results readout ────────────────────────────────────────────────
+
+let _adminResultsCache = [];
+
+async function renderAdminResults() {
+  // RLS already filters: shows only what the user is allowed to see.
+  const { data, error } = await db.from('test_results')
+    .select('id, created_at, taker_email, test_name, group_name, subgroup_name, correct, total, pct, passed')
+    .order('created_at', { ascending: false })
+    .limit(2000);
+  const container = document.getElementById('admin-results-table');
+  if (error) { container.innerHTML = `<div class="panel-msg error">${escHtml(error.message)}</div>`; return; }
+  _adminResultsCache = data ?? [];
+  if (_adminResultsCache.length === 0) {
+    container.innerHTML = '<div style="color:#7a9bb5; padding:8px">No results yet for your scope.</div>';
+    return;
+  }
+  container.innerHTML = '<table class="admin-table"><thead><tr>' +
+    '<th>Date</th><th>Email</th><th>Group / Subgroup</th><th>Test</th><th>Score</th><th>Status</th>' +
+    '</tr></thead><tbody>' +
+    _adminResultsCache.map(r => `<tr class="${r.passed ? 'passed' : 'failed'}">
+      <td>${new Date(r.created_at).toLocaleString()}</td>
+      <td>${escHtml(r.taker_email || '')}</td>
+      <td>${escHtml((r.group_name || '—') + ' / ' + (r.subgroup_name || '—'))}</td>
+      <td>${escHtml(r.test_name || '')}</td>
+      <td>${r.correct} / ${r.total} (${Number(r.pct).toFixed(1)}%)</td>
+      <td><span class="status">${r.passed ? 'PASSED ✓' : 'FAILED ✗'}</span></td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+function adminExportResultsCSV() {
+  if (!_adminResultsCache.length) return;
+  const BOM = '﻿';
+  const header = ['Date','Email','Group','Subgroup','Test','Correct','Total','Pct','Status'];
+  const rows = _adminResultsCache.map(r => [
+    new Date(r.created_at).toISOString(),
+    r.taker_email || '',
+    r.group_name || '',
+    r.subgroup_name || '',
+    r.test_name || '',
+    r.correct, r.total, Number(r.pct).toFixed(2),
+    r.passed ? 'PASSED' : 'FAILED',
+  ]);
+  const csv = BOM + [header, ...rows]
+    .map(r => r.map(c => '"' + String(c ?? '').replace(/"/g, '""') + '"').join(','))
+    .join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'rotr_test_results_' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+
+async function fetchUserEmails(userIds) {
+  const map = new Map();
+  const ids = [...new Set((userIds ?? []).filter(Boolean))];
+  if (ids.length === 0) return map;
+
+  try {
+    const out = await callFn('resolve-user-emails', { user_ids: ids });
+    for (const u of out.users ?? []) {
+      if (u.id && u.email) map.set(u.id, u.email);
+    }
+  } catch (e) {
+    console.warn('resolve-user-emails failed; falling back to result snapshots', e);
+  }
+
+  const missing = ids.filter(id => !map.has(id));
+  if (missing.length) {
+    const { data: rows } = await db.from('test_results')
+      .select('user_id, taker_email')
+      .in('user_id', missing);
+    for (const r of rows ?? []) if (!map.has(r.user_id) && r.taker_email) map.set(r.user_id, r.taker_email);
+  }
+  return map;
 }
 </script>
 </body>
