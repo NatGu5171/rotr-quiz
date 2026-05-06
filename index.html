@@ -7,147 +7,245 @@
   <meta name="description" content="Interactive multiple-choice quiz for the COLREGS / Rules of the Road (ROTR). Practice by rule, scope, and question count.">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
+    :root {
+      --pitch: #0a0b0c;
+      --graphite: #101112;
+      --slate: #151719;
+      --slate-raised: #191b1e;
+      --border: rgba(255, 255, 255, 0.075);
+      --divider: rgba(255, 255, 255, 0.13);
+      --input: #202226;
+      --text: #f2f3f3;
+      --text-soft: #c9ced6;
+      --muted: #8b9099;
+      --subtle: #5f646c;
+      --lime: #e4f222;
+      --lime-soft: rgba(228, 242, 34, 0.12);
+      --lime-border: rgba(228, 242, 34, 0.3);
+      --blue: #5e6ad2;
+      --cyan: #02b8cc;
+      --violet: #8b5cf6;
+      --green: #27a644;
+      --green-dark: #08210f;
+      --red: #eb5757;
+      --red-dark: #2a1010;
+      --warning: #f2c94c;
+      --shadow-sm: rgba(0, 0, 0, 0.24) 0 1px 2px;
+      --shadow-xl: rgba(0, 0, 0, 0.28) 0 8px 28px;
+      --radius: 6px;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Segoe UI', Verdana, sans-serif;
-      background: #1a2332;
-      color: #e8edf3;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 50% -20%, rgba(255,255,255,0.035), transparent 34rem),
+        var(--pitch);
+      color: var(--text);
       min-height: 100vh;
+      letter-spacing: 0;
+    }
+
+    button, input, select {
+      font: inherit;
+      letter-spacing: 0;
     }
 
     header {
-      background: #0d1b2a;
-      padding: 20px 40px;
-      border-bottom: 2px solid #2a4a6b;
+      background: rgba(10, 11, 12, 0.86);
+      backdrop-filter: blur(14px);
+      padding: 15px 28px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
     }
-    header h1 { font-size: 1.4rem; color: #5ba3d9; letter-spacing: 1px; }
-    header span { color: #7a9bb5; font-size: 0.9rem; }
+    header h1 { font-size: 1rem; color: var(--text); letter-spacing: 0; font-weight: 560; }
+    header span { color: var(--muted); font-size: 0.82rem; }
 
-    .container { max-width: 960px; margin: 0 auto; padding: 30px 20px; }
+    .container { max-width: 1040px; margin: 0 auto; padding: 24px 20px; }
 
     #config-panel {
-      background: #0f2032;
-      border: 1px solid #2a4a6b;
-      border-radius: 12px;
-      padding: 28px;
+      background: var(--graphite);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-xl);
+      padding: 24px;
     }
 
-    .config-section { margin-bottom: 24px; }
+    .config-section { margin-bottom: 26px; }
     .config-section h2 {
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: #5ba3d9;
+      letter-spacing: 0;
+      color: var(--subtle);
       margin-bottom: 14px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #1e3a52;
+      padding-bottom: 9px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 560;
     }
 
-    .scope-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .scope-group { display: flex; gap: 8px; flex-wrap: wrap; }
     .scope-btn {
-      padding: 8px 18px;
-      border-radius: 20px;
-      border: 2px solid #2a4a6b;
-      background: transparent;
-      color: #a0bdd4;
+      position: relative;
+      padding: 8px 12px 8px 25px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.015);
+      color: var(--muted);
       cursor: pointer;
-      font-size: 0.85rem;
-      transition: all .2s;
+      font-size: 0.83rem;
+      transition: border-color .15s, color .15s, background .15s, transform .15s;
     }
-    .scope-btn.active { background: #1a5276; border-color: #5ba3d9; color: #fff; }
+    .scope-btn::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--subtle);
+      transform: translateY(-50%);
+      transition: background .15s, box-shadow .15s;
+    }
+    .scope-btn:hover { border-color: var(--divider); color: var(--text-soft); background: var(--slate); }
+    .scope-btn.active {
+      background: var(--slate);
+      border-color: var(--divider);
+      color: var(--text);
+    }
+    .scope-btn.active::before {
+      background: var(--lime);
+      box-shadow: 0 0 0 3px var(--lime-soft);
+    }
 
     .select-links { display: flex; gap: 12px; margin-bottom: 12px; }
-    .select-links a { color: #5ba3d9; font-size: 0.78rem; cursor: pointer; text-decoration: underline; }
+    .select-links a { color: var(--muted); font-size: 0.78rem; cursor: pointer; text-decoration: none; font-weight: 520; }
+    .select-links a:hover { color: var(--text-soft); }
 
     .rules-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 6px;
+      grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+      gap: 8px;
     }
 
     .rule-label {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 7px 10px;
-      border-radius: 8px;
-      border: 1px solid #2a4a6b;
+      gap: 9px;
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.018);
       cursor: pointer;
       font-size: 0.82rem;
-      color: #a0bdd4;
-      transition: all .2s;
+      color: var(--muted);
+      transition: all .15s;
       user-select: none;
+      min-height: 34px;
     }
-    .rule-label:hover { border-color: #5ba3d9; color: #fff; }
+    .rule-label:hover { border-color: var(--divider); color: var(--text-soft); background: var(--slate); }
     .rule-label input[type="checkbox"] {
-      accent-color: #5ba3d9;
-      width: 14px; height: 14px;
-      cursor: pointer; flex-shrink: 0;
+      appearance: none;
+      position: relative;
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+      flex-shrink: 0;
+      border: 1px solid var(--divider);
+      border-radius: 4px;
+      background: transparent;
+      transition: background .15s, border-color .15s;
     }
-    .rule-label.checked { border-color: #5ba3d9; background: #0d2840; color: #fff; }
+    .rule-label input[type="checkbox"]:checked {
+      border-color: var(--lime-border);
+      background: var(--lime-soft);
+    }
+    .rule-label input[type="checkbox"]:checked::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 1px;
+      width: 4px;
+      height: 8px;
+      border: solid color-mix(in srgb, var(--lime) 88%, white);
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .rule-label.checked { border-color: rgba(255, 255, 255, 0.105); background: var(--slate); color: var(--text-soft); }
 
-    .rules-meta { margin-top: 10px; font-size: 0.78rem; color: #7a9bb5; }
+    .rules-meta { margin-top: 10px; font-size: 0.78rem; color: var(--subtle); }
 
     .count-row { display: flex; align-items: center; gap: 16px; }
-    input[type=range] { flex: 1; accent-color: #5ba3d9; }
-    #count-display { font-size: 1.3rem; font-weight: bold; color: #5ba3d9; min-width: 40px; text-align: right; }
+    input[type=range] { flex: 1; accent-color: color-mix(in srgb, var(--lime) 58%, var(--muted)); }
+    #count-display, #admin-count-display { font-size: 1.1rem; font-weight: 560; color: var(--text); min-width: 40px; text-align: right; }
 
     #export-btn {
-      width: 100%; padding: 11px;
+      width: 100%; padding: 10px 12px;
       background: transparent;
-      border: 2px solid #2a4a6b;
-      border-radius: 10px;
-      color: #7a9bb5;
-      font-size: 0.88rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-size: 0.86rem;
       cursor: pointer;
       margin-bottom: 10px;
-      transition: all .2s;
-      letter-spacing: .5px;
+      transition: all .15s;
+      letter-spacing: 0;
     }
-    #export-btn:hover { border-color: #5ba3d9; color: #fff; }
-    #export-btn:disabled { opacity: .3; cursor: not-allowed; }
+    #export-btn:hover { border-color: var(--divider); color: var(--text); background: var(--slate); }
+    #export-btn:disabled { opacity: .35; cursor: not-allowed; }
 
-    #start-btn {
-      width: 100%; padding: 14px;
-      background: #1a5276;
-      border: 2px solid #5ba3d9;
-      border-radius: 10px;
-      color: #fff; font-size: 1rem; font-weight: bold;
-      cursor: pointer; letter-spacing: 1px;
-      transition: background .2s;
+    #start-btn,
+    #next-btn,
+    .btn-primary,
+    .auth-submit,
+    .results-actions button.primary {
+      background: color-mix(in srgb, var(--lime) 88%, white);
+      border: 1px solid color-mix(in srgb, var(--lime) 72%, white);
+      border-radius: var(--radius);
+      color: var(--pitch);
+      font-weight: 560;
+      cursor: pointer;
+      box-shadow: none;
+      transition: background .15s, border-color .15s, opacity .15s;
     }
-    #start-btn:hover { background: #21618c; }
-    #start-btn:disabled { opacity: .4; cursor: not-allowed; }
+    #start-btn:hover,
+    #next-btn:hover,
+    .btn-primary:hover,
+    .auth-submit:hover,
+    .results-actions button.primary:hover { background: var(--lime); border-color: var(--lime); }
+    #start-btn:disabled, .btn-primary:disabled, .auth-submit:disabled { opacity: .45; cursor: not-allowed; }
 
-    #loading { text-align: center; padding: 60px 20px; color: #7a9bb5; font-size: 0.95rem; }
+    #start-btn { width: 100%; padding: 12px; font-size: 0.93rem; letter-spacing: 0; }
+    #loading { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 0.95rem; }
 
     #quiz-panel { display: none; }
 
-    .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .progress-bar-wrap { flex: 1; height: 6px; background: #1e3a52; border-radius: 3px; margin: 0 16px; }
-    .progress-bar { height: 100%; background: #5ba3d9; border-radius: 3px; transition: width .3s; }
-    .quiz-counter { font-size: 0.85rem; color: #7a9bb5; white-space: nowrap; }
+    .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .progress-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 999px; margin: 0 16px; overflow: hidden; }
+    .progress-bar { height: 100%; background: color-mix(in srgb, var(--lime) 70%, var(--muted)); border-radius: 999px; transition: width .3s; }
+    .quiz-counter { font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
 
     .question-card {
-      background: #0f2032;
-      border: 1px solid #2a4a6b;
-      border-radius: 12px;
-      padding: 28px;
+      background: var(--graphite);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: none;
+      padding: 24px;
       margin-bottom: 20px;
     }
 
-    .question-meta { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-    .badge { padding: 3px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: bold; letter-spacing: .5px; }
-    .badge-BOTH          { background: #1a5276; color: #90d2f5; }
-    .badge-INTERNATIONAL { background: #1a3a52; color: #70b8e0; }
-    .badge-INLAND        { background: #1a3d1a; color: #70c070; }
-    .badge-rule          { background: #2c1a52; color: #b090e0; }
+    .question-meta { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .badge { padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: 560; letter-spacing: 0; background: var(--input); color: var(--muted); }
+    .badge-BOTH          { background: var(--input); color: var(--text-soft); }
+    .badge-INTERNATIONAL { background: color-mix(in srgb, var(--blue) 13%, var(--pitch)); color: #a6abde; }
+    .badge-INLAND        { background: color-mix(in srgb, var(--green) 13%, var(--pitch)); color: #8ccf9c; }
+    .badge-rule          { background: color-mix(in srgb, var(--violet) 13%, var(--pitch)); color: #b7a6da; }
 
-    .question-text { font-size: 1.05rem; line-height: 1.6; margin-bottom: 16px; color: #d8e8f3; }
+    .question-text { font-size: 1rem; line-height: 1.6; margin-bottom: 16px; color: var(--text); }
 
     .question-illustration {
       display: block;
@@ -155,173 +253,224 @@
       max-height: 360px;
       object-fit: contain;
       margin: 0 auto 24px;
-      border-radius: 6px;
-      border: 1px solid #2a4a6b;
-      background: #0a1520;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--pitch);
     }
 
-    .choices { display: flex; flex-direction: column; gap: 10px; }
+    .choices { display: flex; flex-direction: column; gap: 8px; }
     .choice-btn {
-      padding: 13px 18px;
-      border-radius: 8px;
-      border: 2px solid #2a4a6b;
-      background: transparent;
-      color: #c0d8ea;
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--pitch);
+      color: var(--text-soft);
       font-size: 0.92rem;
       text-align: left;
       cursor: pointer;
       transition: all .15s;
       line-height: 1.4;
     }
-    .choice-btn:hover:not(:disabled) { border-color: #5ba3d9; background: #0d2840; }
-    .choice-btn.correct { border-color: #27ae60; background: #0d3320; color: #58d68d; }
-    .choice-btn.wrong   { border-color: #c0392b; background: #330d0d; color: #e87c72; }
+    .choice-btn:hover:not(:disabled) { border-color: var(--divider); background: var(--slate); color: var(--text); }
+    .choice-btn.correct { border-color: color-mix(in srgb, var(--green) 46%, var(--border)); background: color-mix(in srgb, var(--green-dark) 64%, var(--graphite)); color: #98d9a6; }
+    .choice-btn.wrong   { border-color: color-mix(in srgb, var(--red) 42%, var(--border)); background: color-mix(in srgb, var(--red-dark) 64%, var(--graphite)); color: #e9a0a0; }
     .choice-btn:disabled { cursor: default; }
 
-    #feedback { margin-top: 16px; padding: 14px 18px; border-radius: 8px; font-weight: bold; display: none; }
-    #feedback.correct { background: #0d3320; border: 1px solid #27ae60; color: #58d68d; }
-    #feedback.wrong   { background: #330d0d; border: 1px solid #c0392b; color: #e87c72; }
+    #feedback { margin-top: 16px; padding: 12px 14px; border-radius: var(--radius); font-weight: 590; display: none; }
+    #feedback.correct { background: color-mix(in srgb, var(--green-dark) 64%, var(--graphite)); border: 1px solid color-mix(in srgb, var(--green) 46%, var(--border)); color: #98d9a6; }
+    #feedback.wrong   { background: color-mix(in srgb, var(--red-dark) 64%, var(--graphite)); border: 1px solid color-mix(in srgb, var(--red) 42%, var(--border)); color: #e9a0a0; }
 
     #next-btn {
-      margin-top: 16px; padding: 11px 28px;
-      background: #1a5276; border: 2px solid #5ba3d9;
-      border-radius: 8px; color: #fff; font-size: 0.9rem;
-      cursor: pointer; display: none; float: right;
+      margin-top: 16px; padding: 10px 20px;
+      font-size: 0.9rem;
+      display: none; float: right;
     }
-    #next-btn:hover { background: #21618c; }
 
     #results-panel { display: none; }
 
-    .results-card { background: #0f2032; border: 1px solid #2a4a6b; border-radius: 12px; padding: 36px; text-align: center; }
-    .results-score { font-size: 4rem; font-weight: bold; color: #5ba3d9; line-height: 1; }
-    .results-label { color: #7a9bb5; margin: 8px 0 24px; font-size: 1rem; }
+    .results-card { background: var(--graphite); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; text-align: center; box-shadow: var(--shadow-xl); }
+    .results-score { font-size: 4rem; font-weight: 560; color: var(--text); line-height: 1; }
+    .results-label { color: var(--muted); margin: 8px 0 24px; font-size: 1rem; }
     .results-breakdown { display: flex; justify-content: center; gap: 40px; margin-bottom: 28px; }
     .breakdown-item { text-align: center; }
-    .breakdown-num { font-size: 2rem; font-weight: bold; }
-    .breakdown-num.ok   { color: #27ae60; }
-    .breakdown-num.fail { color: #c0392b; }
-    .breakdown-label { font-size: 0.8rem; color: #7a9bb5; }
+    .breakdown-num { font-size: 2rem; font-weight: 590; }
+    .breakdown-num.ok   { color: var(--green); }
+    .breakdown-num.fail { color: var(--red); }
+    .breakdown-label { font-size: 0.8rem; color: var(--muted); }
     .results-by-rule { text-align: left; margin-top: 20px; }
-    .results-by-rule h3 { color: #5ba3d9; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .results-by-rule h3 { color: var(--muted); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0; margin-bottom: 12px; }
     .rule-stat { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; }
-    .rule-stat-name { width: 80px; color: #a0bdd4; }
-    .rule-stat-bar-wrap { flex: 1; height: 8px; background: #1e3a52; border-radius: 4px; }
-    .rule-stat-bar { height: 100%; border-radius: 4px; background: #27ae60; }
-    .rule-stat-bar.fail { background: #c0392b; }
-    .rule-stat-count { color: #7a9bb5; width: 50px; text-align: right; }
-    .results-actions { display: flex; gap: 12px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
-    .results-actions button { padding: 11px 28px; border-radius: 8px; border: 2px solid #2a4a6b; background: transparent; color: #a0bdd4; cursor: pointer; font-size: 0.9rem; transition: all .2s; }
-    .results-actions button.primary { background: #1a5276; border-color: #5ba3d9; color: #fff; }
-    .results-actions button.danger  { background: #1a3276; border-color: #e07040; color: #f0a070; }
-    .results-actions button:hover { border-color: #5ba3d9; color: #fff; }
+    .rule-stat-name { width: 80px; color: var(--text-soft); }
+    .rule-stat-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
+    .rule-stat-bar { height: 100%; border-radius: 999px; background: var(--green); }
+    .rule-stat-bar.fail { background: var(--red); }
+    .rule-stat-count { color: var(--muted); width: 50px; text-align: right; }
+    .results-actions { display: flex; gap: 10px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+    .results-actions button { padding: 10px 18px; border-radius: var(--radius); border: 1px solid var(--border); background: transparent; color: var(--text-soft); cursor: pointer; font-size: 0.9rem; transition: all .15s; }
+    .results-actions button.danger  { border-color: color-mix(in srgb, var(--red) 34%, var(--border)); color: #e9a0a0; }
+    .results-actions button:hover { border-color: var(--divider); color: var(--text); background: var(--slate); }
 
-    .review-box { background: #1a0f0f; border: 1px solid #c0392b; border-radius: 10px; padding: 18px 20px; margin-top: 24px; text-align: left; }
-    .review-box h3 { color: #e87c72; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .review-box { background: color-mix(in srgb, var(--red-dark) 62%, var(--graphite)); border: 1px solid color-mix(in srgb, var(--red) 34%, var(--border)); border-radius: var(--radius); padding: 16px; margin-top: 24px; text-align: left; }
+    .review-box h3 { color: #e9a0a0; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0; margin-bottom: 12px; }
     .review-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-    .review-tag { padding: 4px 12px; border-radius: 14px; background: #3a1515; border: 1px solid #c0392b; color: #e87c72; font-size: 0.82rem; font-weight: bold; }
+    .review-tag { padding: 3px 8px; border-radius: 4px; background: color-mix(in srgb, var(--red) 12%, var(--pitch)); border: 1px solid color-mix(in srgb, var(--red) 30%, var(--border)); color: #e9a0a0; font-size: 0.82rem; font-weight: 560; }
 
-    .history-btn { float: right; padding: 7px 16px; border: 1px solid #2a4a6b; background: transparent; color: #7a9bb5; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all .2s; }
-    .history-btn:hover { border-color: #5ba3d9; color: #fff; }
+    .history-btn,
+    .history-clear-btn,
+    .btn-secondary,
+    .header-auth-btn,
+    .mode-btn,
+    .header-admin-btn,
+    .admin-tab {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 0.82rem;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .history-btn { float: right; }
+    .history-btn:hover,
+    .history-clear-btn:hover,
+    .btn-secondary:hover,
+    .header-auth-btn:hover,
+    .mode-btn:hover,
+    .header-admin-btn:hover,
+    .admin-tab:hover { border-color: var(--divider); color: var(--text); background: var(--slate); }
 
-    .history-entry { background: #0a1828; border: 1px solid #2a4a6b; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; }
+    .history-entry { background: rgba(255, 255, 255, 0.018); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; }
     .history-entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .history-date { font-size: 0.8rem; color: #7a9bb5; }
-    .history-score { font-size: 1.3rem; font-weight: bold; }
-    .history-score.good { color: #27ae60; }
-    .history-score.avg  { color: #f39c12; }
-    .history-score.bad  { color: #c0392b; }
-    .history-detail { font-size: 0.8rem; color: #7a9bb5; margin-bottom: 8px; }
+    .history-date { font-size: 0.8rem; color: var(--muted); }
+    .history-score { font-size: 1.25rem; font-weight: 560; }
+    .history-score.good { color: var(--green); }
+    .history-score.avg  { color: var(--warning); }
+    .history-score.bad  { color: var(--red); }
+    .history-detail { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
     .history-review-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-    .history-review-tag { padding: 2px 9px; border-radius: 10px; background: #3a1515; border: 1px solid #8a2a2a; color: #e87c72; font-size: 0.75rem; cursor: pointer; transition: all .2s; }
-    .history-review-tag:hover { background: #5a2020; border-color: #c0392b; }
-    .history-drill-btn { margin-top: 10px; padding: 6px 14px; border-radius: 6px; border: 1px solid #e07040; background: transparent; color: #f0a070; font-size: 0.78rem; cursor: pointer; transition: all .2s; }
-    .history-drill-btn:hover { background: #3a1a0a; }
-    .history-empty { text-align: center; color: #7a9bb5; padding: 40px 0; font-size: 0.9rem; }
-    .history-clear-btn { padding: 7px 16px; border: 1px solid #6a2a2a; background: transparent; color: #e87c72; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all .2s; }
-    .history-clear-btn:hover { background: #3a1515; }
+    .history-review-tag { padding: 2px 7px; border-radius: 4px; background: color-mix(in srgb, var(--red) 12%, var(--pitch)); border: 1px solid color-mix(in srgb, var(--red) 28%, var(--border)); color: #e9a0a0; font-size: 0.75rem; cursor: pointer; transition: all .15s; }
+    .history-review-tag:hover { background: color-mix(in srgb, var(--red) 18%, var(--pitch)); border-color: color-mix(in srgb, var(--red) 44%, var(--border)); }
+    .history-drill-btn { margin-top: 10px; padding: 6px 12px; border-radius: var(--radius); border: 1px solid color-mix(in srgb, var(--red) 34%, var(--border)); background: transparent; color: #e9a0a0; font-size: 0.78rem; cursor: pointer; transition: all .15s; }
+    .history-drill-btn:hover { background: color-mix(in srgb, var(--red-dark) 55%, var(--graphite)); }
+    .history-empty { text-align: center; color: var(--muted); padding: 40px 0; font-size: 0.9rem; }
+    .history-clear-btn { border-color: color-mix(in srgb, var(--red) 28%, var(--border)); color: #e9a0a0; }
 
     /* Auth modal */
-    .auth-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:200; align-items:center; justify-content:center; }
+    .auth-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.78); z-index:200; align-items:center; justify-content:center; }
     .auth-overlay.open { display:flex; }
-    .auth-modal { background:#0f2032; border:1px solid #2a4a6b; border-radius:14px; padding:32px; width:380px; max-width:92vw; position:relative; }
-    .auth-tabs { display:flex; margin-bottom:24px; border-bottom:1px solid #1e3a52; }
-    .auth-tab { flex:1; padding:10px; text-align:center; cursor:pointer; font-size:0.88rem; color:#7a9bb5; border:none; background:none; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .2s; }
-    .auth-tab.active { color:#5ba3d9; border-bottom-color:#5ba3d9; }
+    .auth-modal { background:var(--graphite); border:1px solid var(--border); border-radius:var(--radius); padding:28px; width:380px; max-width:92vw; position:relative; box-shadow: var(--shadow-xl); }
+    .auth-tabs { display:flex; margin-bottom:24px; border-bottom:1px solid var(--border); }
+    .auth-tab { flex:1; padding:10px; text-align:center; cursor:pointer; font-size:0.88rem; color:var(--muted); border:none; background:none; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .15s; }
+    .auth-tab.active { color:var(--text); border-bottom-color:var(--lime); }
     .auth-field { margin-bottom:16px; }
-    .auth-field label { display:block; font-size:0.78rem; color:#7a9bb5; margin-bottom:6px; letter-spacing:.5px; text-transform:uppercase; }
-    .auth-field input { width:100%; padding:11px 14px; background:#0a1828; border:1px solid #2a4a6b; border-radius:8px; color:#e8edf3; font-size:0.92rem; outline:none; transition:border-color .2s; }
-    .auth-field input:focus { border-color:#5ba3d9; }
-    .auth-submit { width:100%; padding:12px; background:#1a5276; border:2px solid #5ba3d9; border-radius:8px; color:#fff; font-size:0.95rem; font-weight:bold; cursor:pointer; margin-top:4px; transition:background .2s; }
-    .auth-submit:hover { background:#21618c; }
-    .auth-submit:disabled { opacity:.5; cursor:not-allowed; }
-    .auth-error { margin-top:12px; padding:10px 14px; background:#330d0d; border:1px solid #c0392b; border-radius:6px; color:#e87c72; font-size:0.83rem; display:none; }
-    .auth-info  { margin-top:12px; padding:10px 14px; background:#0d3320; border:1px solid #27ae60; border-radius:6px; color:#58d68d; font-size:0.83rem; display:none; }
-    .auth-close { position:absolute; top:14px; right:16px; background:none; border:none; color:#7a9bb5; font-size:1.2rem; cursor:pointer; padding:4px 8px; }
-    .auth-close:hover { color:#fff; }
+    .auth-field label, .form-row label { display:block; font-size:0.76rem; color:var(--muted); margin-bottom:6px; letter-spacing:0; text-transform:uppercase; }
+    .auth-field input,
+    .text-input,
+    .password-input,
+    select.text-input {
+      width:100%;
+      padding:11px 12px;
+      background:var(--pitch);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      color:var(--text);
+      font-size:0.92rem;
+      outline:none;
+      transition:border-color .15s, box-shadow .15s;
+    }
+    .auth-field input:focus,
+    .text-input:focus,
+    select.text-input:focus {
+      border-color: var(--divider);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.045);
+    }
+    .auth-submit { width:100%; padding:12px; font-size:0.95rem; margin-top:4px; }
+    .auth-error { margin-top:12px; padding:10px 12px; background:color-mix(in srgb, var(--red-dark) 62%, var(--graphite)); border:1px solid color-mix(in srgb, var(--red) 34%, var(--border)); border-radius:var(--radius); color:#e9a0a0; font-size:0.83rem; display:none; }
+    .auth-info  { margin-top:12px; padding:10px 12px; background:color-mix(in srgb, var(--green-dark) 62%, var(--graphite)); border:1px solid color-mix(in srgb, var(--green) 34%, var(--border)); border-radius:var(--radius); color:#98d9a6; font-size:0.83rem; display:none; }
+    .auth-close { position:absolute; top:12px; right:12px; background:none; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer; padding:4px 8px; }
+    .auth-close:hover { color:var(--text); }
+
     /* Header auth */
-    .header-auth-btn { padding:7px 16px; border:1px solid #2a4a6b; background:transparent; color:#7a9bb5; border-radius:6px; cursor:pointer; font-size:0.8rem; transition:all .2s; white-space:nowrap; flex-shrink:0; }
-    .header-auth-btn:hover { border-color:#5ba3d9; color:#fff; }
-    .header-auth-btn.signout { border-color:#4a2a2a; color:#e87c72; }
-    .header-auth-btn.signout:hover { border-color:#c0392b; background:#3a1515; }
+    .header-auth-btn.signout { border-color: color-mix(in srgb, var(--red) 28%, var(--border)); color: #e9a0a0; }
+    .header-auth-btn.signout:hover { border-color: color-mix(in srgb, var(--red) 44%, var(--border)); background: color-mix(in srgb, var(--red-dark) 55%, var(--graphite)); }
     #header-user-info { display:none; align-items:center; gap:10px; }
-    #header-user-email { font-size:0.78rem; color:#7a9bb5; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    #header-user-email { font-size:0.78rem; color:var(--muted); max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
     /* Mode switcher + admin link */
     .mode-switch { display:flex; gap:6px; margin-right:6px; }
-    .mode-btn { padding:7px 14px; border:1px solid #2a4a6b; background:transparent; color:#7a9bb5; border-radius:6px; cursor:pointer; font-size:0.8rem; transition:all .2s; }
-    .mode-btn:hover { border-color:#5ba3d9; color:#fff; }
-    .mode-btn.active { border-color:#5ba3d9; background:#1a5276; color:#fff; }
-    .header-admin-btn { padding:7px 14px; border:1px solid #c08040; background:transparent; color:#e0a070; border-radius:6px; cursor:pointer; font-size:0.8rem; transition:all .2s; display:none; }
-    .header-admin-btn:hover { background:#3a2510; }
-    .header-membership { font-size:0.72rem; color:#5a7a95; padding:4px 10px; border:1px dashed #2a4a6b; border-radius:6px; cursor:pointer; }
-    .header-membership:hover { color:#a0bdd4; border-color:#5ba3d9; }
+    .mode-btn.active,
+    .admin-tab.active {
+      border-color: var(--divider);
+      background: var(--slate);
+      color: var(--text);
+      box-shadow: inset 0 -1px 0 var(--lime);
+    }
+    .header-admin-btn { display:none; color: var(--text-soft); border-color: var(--border); }
+    .header-membership { font-size:0.72rem; color:var(--muted); padding:4px 10px; border:1px dashed var(--divider); border-radius:var(--radius); cursor:pointer; }
+    .header-membership:hover { color:var(--text); border-color:var(--divider); }
 
     /* Generic panels (test/join/admin) */
-    .panel-card { background:#0f2032; border:1px solid #2a4a6b; border-radius:12px; padding:28px; }
-    .panel-card h2.panel-title { color:#5ba3d9; font-size:1.1rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid #1e3a52; }
-    .panel-card h3.section-title { color:#a0bdd4; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; margin:24px 0 12px; }
-    .text-input, .password-input, select.text-input { width:100%; padding:11px 14px; background:#0a1828; border:1px solid #2a4a6b; border-radius:8px; color:#e8edf3; font-size:0.92rem; outline:none; transition:border-color .2s; }
-    .text-input:focus, select.text-input:focus { border-color:#5ba3d9; }
+    .panel-card { background:var(--graphite); border:1px solid var(--border); border-radius:var(--radius); padding:24px; box-shadow: var(--shadow-xl); }
+    .panel-card h2.panel-title { color:var(--text); font-size:0.98rem; text-transform:uppercase; letter-spacing:0; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--border); font-weight:560; }
+    .panel-card h3.section-title { color:var(--subtle); font-size:0.78rem; text-transform:uppercase; letter-spacing:0; margin:24px 0 12px; font-weight:560; }
     .form-row { margin-bottom:14px; }
-    .form-row label { display:block; font-size:0.78rem; color:#7a9bb5; margin-bottom:6px; letter-spacing:.5px; text-transform:uppercase; }
-    .btn-primary { padding:11px 20px; background:#1a5276; border:2px solid #5ba3d9; border-radius:8px; color:#fff; font-size:0.9rem; font-weight:bold; cursor:pointer; transition:background .2s; }
-    .btn-primary:hover { background:#21618c; }
-    .btn-primary:disabled { opacity:.4; cursor:not-allowed; }
-    .btn-secondary { padding:9px 16px; border:1px solid #2a4a6b; background:transparent; color:#a0bdd4; border-radius:6px; cursor:pointer; font-size:0.85rem; transition:all .2s; }
-    .btn-secondary:hover { border-color:#5ba3d9; color:#fff; }
-    .btn-danger { padding:7px 14px; border:1px solid #6a2a2a; background:transparent; color:#e87c72; border-radius:6px; cursor:pointer; font-size:0.78rem; transition:all .2s; }
-    .btn-danger:hover { background:#3a1515; }
-    .panel-msg { padding:14px 16px; border-radius:8px; font-size:0.9rem; margin-bottom:14px; }
-    .panel-msg.error { background:#330d0d; border:1px solid #c0392b; color:#e87c72; }
-    .panel-msg.info  { background:#0d3320; border:1px solid #27ae60; color:#58d68d; }
+    .btn-primary { padding:10px 16px; font-size:0.88rem; }
+    .btn-secondary { padding:9px 14px; }
+    .btn-danger { padding:7px 12px; border:1px solid color-mix(in srgb, var(--red) 30%, var(--border)); background:transparent; color:#e9a0a0; border-radius:var(--radius); cursor:pointer; font-size:0.78rem; transition:all .15s; }
+    .btn-danger:hover { background:color-mix(in srgb, var(--red-dark) 55%, var(--graphite)); border-color:color-mix(in srgb, var(--red) 44%, var(--border)); }
+    .panel-msg { padding:12px 14px; border-radius:var(--radius); font-size:0.88rem; margin-bottom:14px; }
+    .panel-msg.error { background:color-mix(in srgb, var(--red-dark) 62%, var(--graphite)); border:1px solid color-mix(in srgb, var(--red) 34%, var(--border)); color:#e9a0a0; }
+    .panel-msg.info  { background:color-mix(in srgb, var(--green-dark) 62%, var(--graphite)); border:1px solid color-mix(in srgb, var(--green) 34%, var(--border)); color:#98d9a6; }
 
     /* Test list */
-    .test-list { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
-    .test-item { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:#0a1828; border:1px solid #2a4a6b; border-radius:10px; cursor:pointer; transition:all .15s; }
-    .test-item:hover { border-color:#5ba3d9; }
-    .test-item.selected { border-color:#5ba3d9; background:#0d2840; }
-    .test-item.taken { opacity:.5; cursor:not-allowed; }
-    .test-item .test-name { color:#e8edf3; font-weight:bold; font-size:0.95rem; }
-    .test-item .badge-taken { font-size:0.72rem; padding:3px 9px; border-radius:10px; background:#1a3d1a; color:#70c070; }
-    .test-item .badge-failed { background:#3a1515; color:#e87c72; }
+    .test-list { display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
+    .test-item { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 14px; background:rgba(255,255,255,0.018); border:1px solid var(--border); border-radius:var(--radius); cursor:pointer; transition:all .15s; }
+    .test-item:hover { border-color:var(--divider); background:var(--slate); }
+    .test-item.selected { border-color:var(--divider); background:var(--slate); box-shadow: inset 2px 0 0 var(--lime); }
+    .test-item.taken { opacity:.55; cursor:not-allowed; }
+    .test-item .test-name { color:var(--text); font-weight:560; font-size:0.95rem; }
+    .test-item .badge-taken { font-size:0.72rem; padding:2px 7px; border-radius:4px; background:color-mix(in srgb, var(--green) 14%, var(--pitch)); color:#98d9a6; }
+    .test-item .badge-failed { background:color-mix(in srgb, var(--red) 14%, var(--pitch)); color:#e9a0a0; }
 
     /* Test runtime header (no per-question feedback) */
     #test-quiz-panel { display:none; }
     #test-result-panel { display:none; }
 
-    /* Admin tables */
+    /* Admin */
+    .admin-shell { padding:0; overflow:hidden; }
+    .admin-header { padding:20px 24px 16px; border-bottom:1px solid var(--border); background:var(--graphite); }
+    .admin-header .panel-title { margin-bottom:14px; }
+    .admin-tabs { display:flex; gap:8px; flex-wrap:wrap; }
+    .admin-tab[disabled] { display:none; }
+    .admin-body { padding:24px; }
+    .admin-page { display:none; }
+    .admin-page.active { display:block; }
+    .admin-page-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+    .admin-page-title { color:var(--text); font-size:0.95rem; text-transform:uppercase; letter-spacing:0; font-weight:560; }
+    .admin-section { margin-bottom:28px; }
+    .admin-section:last-child { margin-bottom:0; }
     .admin-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
-    .admin-table th, .admin-table td { text-align:left; padding:9px 12px; border-bottom:1px solid #1e3a52; }
-    .admin-table th { color:#7a9bb5; font-weight:normal; text-transform:uppercase; letter-spacing:.5px; font-size:0.72rem; }
-    .admin-table td { color:#c0d8ea; }
-    .admin-table tr.passed td .status { color:#58d68d; font-weight:bold; }
-    .admin-table tr.failed td .status { color:#e87c72; font-weight:bold; }
+    .admin-table th, .admin-table td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--border); }
+    .admin-table th { color:var(--muted); font-weight:400; text-transform:uppercase; letter-spacing:0; font-size:0.72rem; }
+    .admin-table td { color:var(--text-soft); }
+    .admin-table tr.passed td .status { color:#98d9a6; font-weight:560; }
+    .admin-table tr.failed td .status { color:#e9a0a0; font-weight:560; }
     .row-actions { display:flex; gap:8px; }
     .inline-form { display:flex; gap:8px; align-items:end; flex-wrap:wrap; margin-bottom:14px; }
     .inline-form .form-row { flex:1; min-width:160px; margin-bottom:0; }
 
     /* Join panel */
     #join-panel, #test-select-panel, #admin-panel { display:none; }
+
+    @media (max-width: 720px) {
+      header { align-items: flex-start; flex-wrap: wrap; padding: 14px 16px; }
+      .container { padding: 18px 12px; }
+      .panel-card, #config-panel, .question-card, .results-card { padding: 18px; }
+      .results-breakdown { gap: 24px; }
+      .admin-body, .admin-header { padding-left: 16px; padding-right: 16px; }
+    }
   </style>
 </head>
 <body>
@@ -329,7 +478,7 @@
 <header>
   <div>
     <h1>ROTR Practice Quiz</h1>
-    <div style="font-size:0.78rem; color:#4a7a9b; margin-top:3px; letter-spacing:.3px;">COLREGS · Rules of the Road · International &amp; Inland</div>
+    <div style="font-size:0.78rem; color:var(--muted); margin-top:3px; letter-spacing:0;">COLREGS · Rules of the Road · International &amp; Inland</div>
   </div>
   <span id="header-count" style="margin-left:auto">Loading…</span>
   <div class="mode-switch" id="mode-switch" style="display:none">
@@ -408,19 +557,19 @@
   <div id="history-panel" style="display:none">
     <div class="results-card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2 style="color:#5ba3d9; font-size:1.1rem; text-transform:uppercase; letter-spacing:1px;">Quiz History</h2>
+        <h2 style="color:var(--text); font-size:1rem; text-transform:uppercase; letter-spacing:0;">Quiz History</h2>
         <button class="history-clear-btn" id="history-clear-btn">Clear history</button>
       </div>
       <div id="history-list"></div>
       <div style="text-align:center; margin-top:20px;">
-        <button onclick="showConfig()" style="padding:11px 28px; border-radius:8px; border:2px solid #2a4a6b; background:transparent; color:#a0bdd4; cursor:pointer; font-size:0.9rem;">← Back to config</button>
+        <button class="btn-secondary" onclick="showConfig()">← Back to config</button>
       </div>
     </div>
   </div>
 
   <div id="quiz-panel">
     <div class="quiz-header">
-      <button id="back-btn" style="background:none;border:1px solid #2a4a6b;color:#7a9bb5;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.8rem;">← Config</button>
+      <button id="back-btn" class="btn-secondary">← Config</button>
       <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
       <span class="quiz-counter" id="quiz-counter">1 / 20</span>
     </div>
@@ -498,7 +647,7 @@
   <!-- ────── Test runtime (no per-question feedback) ────── -->
   <div id="test-quiz-panel">
     <div class="quiz-header">
-      <span class="quiz-counter" id="test-quiz-name" style="color:#5ba3d9; font-weight:bold; font-size:0.95rem"></span>
+      <span class="quiz-counter" id="test-quiz-name" style="color:var(--text); font-weight:560; font-size:0.95rem"></span>
       <div class="progress-bar-wrap"><div class="progress-bar" id="test-progress-bar"></div></div>
       <span class="quiz-counter" id="test-quiz-counter">1 / 0</span>
     </div>
@@ -514,8 +663,8 @@
     <div class="results-card">
       <div class="results-score" id="test-result-score"></div>
       <div class="results-label" id="test-result-label">Score</div>
-      <p id="test-result-status" style="font-size:1.4rem; margin:18px 0; font-weight:bold"></p>
-      <p id="test-result-email-line" style="color:#7a9bb5; font-size:0.9rem"></p>
+      <p id="test-result-status" style="font-size:1.4rem; margin:18px 0; font-weight:560"></p>
+      <p id="test-result-email-line" style="color:var(--muted); font-size:0.9rem"></p>
       <div class="results-actions">
         <button class="primary" onclick="setMode('quiz')">Back to Quiz</button>
       </div>
@@ -524,74 +673,106 @@
 
   <!-- ────── Admin panel ────── -->
   <div id="admin-panel">
-    <div class="panel-card">
-      <h2 class="panel-title">Admin</h2>
-
-      <!-- Global admin: groups -->
-      <div id="admin-groups-section" style="display:none">
-        <h3 class="section-title">Groups</h3>
-        <div class="inline-form">
-          <div class="form-row"><label>New group name</label>
-            <input type="text" id="admin-new-group" class="text-input" placeholder="LANTPAT AY-26 Block 0"></div>
-          <button class="btn-primary" onclick="adminCreateGroup()">Add group</button>
+    <div class="panel-card admin-shell">
+      <div class="admin-header">
+        <h2 class="panel-title">Admin</h2>
+        <div class="admin-tabs" id="admin-tabs">
+          <button class="admin-tab" id="admin-tab-groups" type="button" onclick="showAdminPage('groups')">Groups &amp; subgroups</button>
+          <button class="admin-tab" id="admin-tab-tests" type="button" onclick="showAdminPage('tests')">Tests</button>
+          <button class="admin-tab" id="admin-tab-results" type="button" onclick="showAdminPage('results')">Results</button>
         </div>
-        <div id="admin-groups-list"></div>
       </div>
 
-      <!-- Group admin (and global admin): subgroups for the groups they admin -->
-      <div id="admin-subgroups-section" style="display:none">
-        <h3 class="section-title">Subgroups</h3>
-        <div id="admin-subgroups-by-group"></div>
-      </div>
+      <div class="admin-body">
+        <div class="admin-page" id="admin-page-groups">
+          <div class="admin-page-header">
+            <div>
+              <div class="admin-page-title">Groups &amp; subgroups</div>
+            </div>
+          </div>
 
-      <!-- Global admin: tests -->
-      <div id="admin-tests-section" style="display:none">
-        <h3 class="section-title">Create a test</h3>
-        <div class="form-row">
-          <label>Scope</label>
-          <div class="scope-group" id="admin-scope-group">
-            <button class="scope-btn active" type="button" data-scope="BOTH">Both Int'l &amp; Inland</button>
-            <button class="scope-btn active" type="button" data-scope="INTERNATIONAL ONLY">International Only</button>
-            <button class="scope-btn active" type="button" data-scope="INLAND ONLY">Inland Only</button>
+          <!-- Global admin: groups -->
+          <div id="admin-groups-section" class="admin-section" style="display:none">
+            <h3 class="section-title">Groups</h3>
+            <div class="inline-form">
+              <div class="form-row"><label>New group name</label>
+                <input type="text" id="admin-new-group" class="text-input" placeholder="LANTPAT AY-26 Block 0"></div>
+              <button class="btn-primary" onclick="adminCreateGroup()">Add group</button>
+            </div>
+            <div id="admin-groups-list"></div>
+          </div>
+
+          <!-- Group admin (and global admin): subgroups for the groups they admin -->
+          <div id="admin-subgroups-section" class="admin-section" style="display:none">
+            <h3 class="section-title">Subgroups</h3>
+            <div id="admin-subgroups-by-group"></div>
           </div>
         </div>
-        <div class="form-row">
-          <label>Rules</label>
-          <div class="select-links">
-            <a id="admin-select-all-rules">Select all</a>
-            <a id="admin-deselect-all-rules">Deselect all</a>
+
+        <div class="admin-page" id="admin-page-tests">
+          <div class="admin-page-header">
+            <div>
+              <div class="admin-page-title">Tests</div>
+            </div>
           </div>
-          <div class="rules-grid" id="admin-rules-grid"></div>
-          <div class="rules-meta" id="admin-rules-meta"></div>
-        </div>
-        <div class="form-row">
-          <label>Number of questions</label>
-          <div class="count-row">
-            <input type="range" id="admin-count-range" min="5" max="50" value="20" step="5">
-            <span id="admin-count-display">20</span>
+
+          <!-- Global admin: tests -->
+          <div id="admin-tests-section" class="admin-section" style="display:none">
+            <h3 class="section-title">Create a test</h3>
+            <div class="form-row">
+              <label>Scope</label>
+              <div class="scope-group" id="admin-scope-group">
+                <button class="scope-btn active" type="button" data-scope="BOTH">Both Int'l &amp; Inland</button>
+                <button class="scope-btn active" type="button" data-scope="INTERNATIONAL ONLY">International Only</button>
+                <button class="scope-btn active" type="button" data-scope="INLAND ONLY">Inland Only</button>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>Rules</label>
+              <div class="select-links">
+                <a id="admin-select-all-rules">Select all</a>
+                <a id="admin-deselect-all-rules">Deselect all</a>
+              </div>
+              <div class="rules-grid" id="admin-rules-grid"></div>
+              <div class="rules-meta" id="admin-rules-meta"></div>
+            </div>
+            <div class="form-row">
+              <label>Number of questions</label>
+              <div class="count-row">
+                <input type="range" id="admin-count-range" min="5" max="50" value="20" step="5">
+                <span id="admin-count-display">20</span>
+              </div>
+            </div>
+            <div class="inline-form">
+              <div class="form-row"><label>Test name</label>
+                <input type="text" id="admin-test-name" class="text-input" placeholder="LANTPAT Block 0 - Final"></div>
+              <div class="form-row"><label>Password</label>
+                <input type="password" id="admin-test-password" class="text-input" placeholder="••••••••"></div>
+              <button class="btn-primary" id="admin-save-test-btn" onclick="adminCreateTest()">Save test</button>
+            </div>
+
+            <h3 class="section-title">Existing tests</h3>
+            <div id="admin-tests-list"></div>
           </div>
         </div>
-        <div class="inline-form">
-          <div class="form-row"><label>Test name</label>
-            <input type="text" id="admin-test-name" class="text-input" placeholder="LANTPAT Block 0 — Final"></div>
-          <div class="form-row"><label>Password</label>
-            <input type="password" id="admin-test-password" class="text-input" placeholder="••••••••"></div>
-          <button class="btn-primary" id="admin-save-test-btn" onclick="adminCreateTest()">Save test</button>
+
+        <div class="admin-page" id="admin-page-results">
+          <div class="admin-page-header">
+            <div>
+              <div class="admin-page-title">Results</div>
+            </div>
+            <button class="btn-secondary" onclick="adminExportResultsCSV()">Export CSV</button>
+          </div>
+
+          <!-- Subgroup admin (and above): results readout -->
+          <div id="admin-results-section" class="admin-section" style="display:none">
+            <div id="admin-results-table"></div>
+          </div>
         </div>
 
-        <h3 class="section-title">Existing tests</h3>
-        <div id="admin-tests-list"></div>
-      </div>
-
-      <!-- Subgroup admin (and above): results readout -->
-      <div id="admin-results-section" style="display:none">
-        <h3 class="section-title">Results</h3>
-        <div style="margin-bottom:10px"><button class="btn-secondary" onclick="adminExportResultsCSV()">⬇ Export CSV</button></div>
-        <div id="admin-results-table"></div>
-      </div>
-
-      <div style="margin-top:24px; text-align:center">
-        <button class="btn-secondary" onclick="setMode(currentMode)">← Back</button>
+        <div style="margin-top:24px; text-align:center">
+          <button class="btn-secondary" onclick="setMode(currentMode)">Back</button>
+        </div>
       </div>
     </div>
   </div>
@@ -642,13 +823,16 @@ fetch('rotr_questions.json')
       return el && el.style.display && el.style.display !== 'none';
     });
     if (!inForced) showConfig();
+    else if (document.getElementById('admin-panel').style.display !== 'none' && activeAdminPage === 'tests') {
+      void showAdminPage('tests');
+    }
   })
   .catch((err) => {
     document.getElementById('loading').innerHTML =
-      '<div style="color:#e87c72; max-width:500px; margin:0 auto; line-height:1.7">' +
+      '<div style="color:#e9a0a0; max-width:500px; margin:0 auto; line-height:1.7">' +
       '<b>Could not load questions.</b><br>' +
       'Make sure you are opening this page via a web server (not directly as a file).<br>' +
-      '<span style="color:#7a9bb5; font-size:0.85rem">Details: ' + err + '</span></div>';
+      '<span style="color:var(--muted); font-size:0.85rem">Details: ' + err + '</span></div>';
   });
 
 function initConfig() {
@@ -964,8 +1148,8 @@ function showResults() {
       '</div></div>';
     document.getElementById('drill-btn').style.display = 'inline-block';
   } else {
-    reviewBox.innerHTML = '<div class="review-box" style="border-color:#27ae60; background:#0d3320">' +
-      '<h3 style="color:#58d68d">Perfect — no rules to review!</h3></div>';
+    reviewBox.innerHTML = '<div class="review-box" style="border-color:var(--green); background:var(--green-dark)">' +
+      '<h3 style="color:#98d9a6">Perfect — no rules to review!</h3></div>';
     document.getElementById('drill-btn').style.display = 'none';
   }
 
@@ -1097,7 +1281,7 @@ async function showHistory() {
       ? e.rulesToReview.map(r =>
           '<span class="history-review-tag" onclick="drillRules([\''+r+'\'])">' + r + '</span>'
         ).join('')
-      : '<span style="color:#27ae60;font-size:0.78rem">No rules to review ✓</span>';
+      : '<span style="color:#98d9a6;font-size:0.78rem">No rules to review ✓</span>';
     const drillBtn = e.rulesToReview.length
       ? '<button class="history-drill-btn" onclick=\'drillRules(' + JSON.stringify(e.rulesToReview) + ')\'>Drill all weak rules →</button>'
       : '';
@@ -1176,6 +1360,7 @@ let testSession  = null;     // { token, test_name, questions, answers: Map<id, 
 // Admin: scope/rules/count for test creation (independent of quiz state)
 let adminSelectedScopes = new Set(['BOTH','INTERNATIONAL ONLY','INLAND ONLY']);
 let adminSelectedRules  = new Set();
+let activeAdminPage     = null; // 'groups' | 'tests' | 'results'
 
 // ── Context loading ─────────────────────────────────────────────────────────
 
@@ -1310,7 +1495,7 @@ let _selectedTestId = null;
 
 async function loadTestList() {
   const list = document.getElementById('test-list');
-  list.innerHTML = '<div style="color:#7a9bb5; padding:14px">Loading tests…</div>';
+  list.innerHTML = '<div style="color:var(--muted); padding:14px">Loading tests…</div>';
 
   const [{ data: tests }, { data: taken }] = await Promise.all([
     db.from('tests').select('id, name').order('name'),
@@ -1318,7 +1503,7 @@ async function loadTestList() {
   ]);
 
   if (!tests || tests.length === 0) {
-    list.innerHTML = '<div style="color:#7a9bb5; padding:14px">No tests have been created yet.</div>';
+    list.innerHTML = '<div style="color:var(--muted); padding:14px">No tests have been created yet.</div>';
     return;
   }
   const takenMap = new Map((taken ?? []).map(r => [r.test_id, r]));
@@ -1332,7 +1517,7 @@ async function loadTestList() {
     item.innerHTML = `<span class="test-name">${escHtml(t.name)}</span>` +
       (t0
         ? `<span class="badge-taken ${t0.passed ? '' : 'badge-failed'}">Already taken — ${Number(t0.pct).toFixed(0)}% ${t0.passed ? '✓' : '✗'}</span>`
-        : '<span style="color:#7a9bb5; font-size:0.78rem">Not taken</span>');
+        : '<span style="color:var(--muted); font-size:0.78rem">Not taken</span>');
     if (!t0) {
       item.onclick = () => {
         document.querySelectorAll('#test-list .test-item').forEach(x => x.classList.remove('selected'));
@@ -1427,7 +1612,7 @@ function showTestQuestion() {
   // highlight selection
   if (chosen) {
     const el = card.querySelector(`.choice-btn[data-choice="${chosen}"]`);
-    if (el) el.style.borderColor = '#5ba3d9', el.style.background = '#0d2840', el.style.color = '#fff';
+    if (el) el.style.borderColor = 'var(--divider)', el.style.background = 'var(--slate)', el.style.color = 'var(--text)';
   }
 
   document.getElementById('test-prev-btn').disabled = testSession.idx === 0;
@@ -1469,14 +1654,14 @@ function showTestResult(out) {
   document.getElementById('test-result-label').textContent = out.correct + ' / ' + out.total + ' correct';
   const status = document.getElementById('test-result-status');
   status.textContent = out.passed ? 'PASSED ✓' : 'FAILED ✗';
-  status.style.color = out.passed ? '#27ae60' : '#c0392b';
+  status.style.color = out.passed ? '#98d9a6' : '#e9a0a0';
   const emailLine = document.getElementById('test-result-email-line');
   if (out.email_sent === false) {
     emailLine.textContent = 'Result recorded. Email delivery failed; contact the instructor.';
-    emailLine.style.color = '#e87c72';
+    emailLine.style.color = '#e9a0a0';
   } else {
     emailLine.textContent = 'An email has been sent to ' + currentUser.email + '.';
-    emailLine.style.color = '#7a9bb5';
+    emailLine.style.color = 'var(--muted)';
   }
   testSession = null;
 }
@@ -1491,27 +1676,58 @@ async function showAdmin() {
   if (!isAdminAnywhere()) return;
   hideAllPanels();
   document.getElementById('admin-panel').style.display = 'block';
+  await showAdminPage(activeAdminPage);
+}
 
+function getAdminAccess() {
   const isGlobal = currentRole === 'global_admin';
   const groupGrants    = myGrants.filter(g => g.scope_type === 'group');
   const subgroupGrants = myGrants.filter(g => g.scope_type === 'subgroup');
+  return {
+    isGlobal,
+    groupGrants,
+    subgroupGrants,
+    groups: isGlobal || groupGrants.length > 0,
+    tests: isGlobal,
+    results: isGlobal || groupGrants.length > 0 || subgroupGrants.length > 0,
+  };
+}
 
-  document.getElementById('admin-groups-section').style.display = isGlobal ? 'block' : 'none';
-  document.getElementById('admin-tests-section').style.display  = isGlobal ? 'block' : 'none';
-  document.getElementById('admin-subgroups-section').style.display =
-    (isGlobal || groupGrants.length > 0) ? 'block' : 'none';
-  document.getElementById('admin-results-section').style.display =
-    (isGlobal || groupGrants.length > 0 || subgroupGrants.length > 0) ? 'block' : 'none';
+function getDefaultAdminPage(access) {
+  if (access.groups) return 'groups';
+  if (access.tests) return 'tests';
+  return 'results';
+}
 
-  if (isGlobal) {
-    await renderGlobalAdminGroups();
+async function showAdminPage(page) {
+  if (!isAdminAnywhere()) return;
+  const access = getAdminAccess();
+  if (!page || !access[page]) page = getDefaultAdminPage(access);
+  activeAdminPage = page;
+
+  document.querySelectorAll('.admin-tab').forEach(tab => {
+    const tabPage = tab.id.replace('admin-tab-', '');
+    tab.disabled = !access[tabPage];
+    tab.classList.toggle('active', tabPage === page);
+  });
+  document.querySelectorAll('.admin-page').forEach(panel => {
+    panel.classList.toggle('active', panel.id === 'admin-page-' + page);
+  });
+
+  document.getElementById('admin-groups-section').style.display = access.isGlobal ? 'block' : 'none';
+  document.getElementById('admin-subgroups-section').style.display = access.groups ? 'block' : 'none';
+  document.getElementById('admin-tests-section').style.display = access.tests ? 'block' : 'none';
+  document.getElementById('admin-results-section').style.display = access.results ? 'block' : 'none';
+
+  if (page === 'groups') {
+    if (access.isGlobal) await renderGlobalAdminGroups();
+    if (access.groups) await renderAdminSubgroupsForGroups();
+  }
+  if (page === 'tests' && access.tests) {
     initAdminTestForm();
     await renderAdminTestsList();
   }
-  if (isGlobal || groupGrants.length > 0) {
-    await renderAdminSubgroupsForGroups();
-  }
-  if (isGlobal || groupGrants.length > 0 || subgroupGrants.length > 0) {
+  if (page === 'results' && access.results) {
     await renderAdminResults();
   }
 }
@@ -1571,7 +1787,7 @@ async function renderGlobalAdminGroups() {
   const container = document.getElementById('admin-groups-list');
   const { data: groups } = await db.from('groups').select('id, name').order('name');
   if (!groups || groups.length === 0) {
-    container.innerHTML = '<div style="color:#7a9bb5; padding:8px">No groups yet.</div>';
+    container.innerHTML = '<div style="color:var(--muted); padding:8px">No groups yet.</div>';
     return;
   }
   // fetch all group admin grants for these groups
@@ -1591,8 +1807,8 @@ async function renderGlobalAdminGroups() {
           `<li style="margin:4px 0">${escHtml(userMap.get(a.user_id) ?? a.user_id)}
              <button class="btn-danger" style="margin-left:6px" onclick="adminRemoveGrant('${a.id}')">Remove</button>
            </li>`).join('')
-      : '<li style="color:#7a9bb5">No group admins.</li>';
-    return `<div style="background:#0a1828; border:1px solid #2a4a6b; border-radius:10px; padding:14px 18px; margin-bottom:10px">
+      : '<li style="color:var(--muted)">No group admins.</li>';
+    return `<div style="background:var(--pitch); border:1px solid var(--border); border-radius:var(--radius); padding:14px 18px; margin-bottom:10px">
       <div style="display:flex; justify-content:space-between; align-items:center">
         <strong>${escHtml(g.name)}</strong>
         <div class="row-actions">
@@ -1601,7 +1817,7 @@ async function renderGlobalAdminGroups() {
         </div>
       </div>
       <div style="margin-top:10px">
-        <div style="font-size:0.78rem; color:#7a9bb5; margin-bottom:4px">GROUP ADMINS</div>
+        <div style="font-size:0.78rem; color:var(--muted); margin-bottom:4px">GROUP ADMINS</div>
         <ul style="list-style:none; padding:0; font-size:0.85rem">${adminRows}</ul>
         <button class="btn-secondary" onclick="adminAddGroupAdmin('${g.id}')">+ Add group admin</button>
       </div>
@@ -1622,7 +1838,7 @@ async function renderAdminSubgroupsForGroups() {
     groups = groups.filter(g => allowed.has(g.id));
   }
   if (groups.length === 0) {
-    container.innerHTML = '<div style="color:#7a9bb5; padding:8px">No groups under your administration.</div>';
+    container.innerHTML = '<div style="color:var(--muted); padding:8px">No groups under your administration.</div>';
     return;
   }
 
@@ -1649,8 +1865,8 @@ async function renderAdminSubgroupsForGroups() {
         ? sAdmins.map(a => `<li style="margin:3px 0">${escHtml(userMap.get(a.user_id) ?? a.user_id)}
              <button class="btn-danger" style="margin-left:6px" onclick="adminRemoveGrant('${a.id}')">Remove</button>
            </li>`).join('')
-        : '<li style="color:#7a9bb5">No subgroup admins.</li>';
-      return `<div style="background:#0a1828; border:1px solid #2a4a6b; border-radius:8px; padding:10px 14px; margin:8px 0">
+        : '<li style="color:var(--muted)">No subgroup admins.</li>';
+      return `<div style="background:var(--pitch); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px; margin:8px 0">
         <div style="display:flex; justify-content:space-between; align-items:center">
           <strong>${escHtml(s.name)}</strong>
           <div class="row-actions">
@@ -1659,7 +1875,7 @@ async function renderAdminSubgroupsForGroups() {
           </div>
         </div>
         <div style="margin-top:8px">
-          <div style="font-size:0.72rem; color:#7a9bb5">SUBGROUP ADMINS</div>
+          <div style="font-size:0.72rem; color:var(--muted)">SUBGROUP ADMINS</div>
           <ul style="list-style:none; padding:0; font-size:0.82rem">${adminLis}</ul>
           <button class="btn-secondary" onclick="adminAddSubgroupAdmin('${s.id}')">+ Add subgroup admin</button>
         </div>
@@ -1667,13 +1883,13 @@ async function renderAdminSubgroupsForGroups() {
     }).join('');
 
     return `<div style="margin-bottom:18px">
-      <div style="font-weight:bold; color:#5ba3d9; margin-bottom:6px">${escHtml(g.name)}</div>
+      <div style="font-weight:560; color:var(--text); margin-bottom:6px">${escHtml(g.name)}</div>
       <div class="inline-form">
         <div class="form-row"><label>New subgroup name</label>
           <input type="text" class="text-input" id="new-sub-${g.id}" placeholder="Pennant 1"></div>
         <button class="btn-primary" onclick="adminCreateSubgroup('${g.id}')">Add subgroup</button>
       </div>
-      ${subRows || '<div style="color:#7a9bb5">No subgroups.</div>'}
+      ${subRows || '<div style="color:var(--muted)">No subgroups.</div>'}
     </div>`;
   }).join('');
 }
@@ -1719,7 +1935,12 @@ async function adminAddSubgroupAdmin(subgroup_id) {
 // ── Admin: tests (global only) ────────────────────────────────────────────
 
 function initAdminTestForm() {
-  if (document.getElementById('admin-rules-grid').dataset.inited === '1') return;
+  const grid = document.getElementById('admin-rules-grid');
+  if (grid.dataset.inited === '1') return;
+  if (ALL_QUESTIONS.length === 0) {
+    grid.innerHTML = '<div style="color:var(--muted); padding:8px">Loading questions...</div>';
+    return;
+  }
   const allRules = [...new Set(ALL_QUESTIONS.flatMap(q => q.rules))].sort((a, b) => {
     const na = a.match(/\d+/), nb = b.match(/\d+/);
     if (na && nb) return parseInt(na[0]) - parseInt(nb[0]);
@@ -1727,7 +1948,6 @@ function initAdminTestForm() {
   });
   adminSelectedRules = new Set(allRules);
 
-  const grid = document.getElementById('admin-rules-grid');
   grid.innerHTML = '';
   allRules.forEach(rule => {
     const label = document.createElement('label');
@@ -1823,7 +2043,7 @@ async function renderAdminTestsList() {
   const { data: tests, error } = await db.from('tests').select('id, name, created_at').order('created_at', { ascending: false });
   if (error) { container.innerHTML = `<div class="panel-msg error">${escHtml(error.message)}</div>`; return; }
   if (!tests || tests.length === 0) {
-    container.innerHTML = '<div style="color:#7a9bb5; padding:8px">No tests yet.</div>';
+    container.innerHTML = '<div style="color:var(--muted); padding:8px">No tests yet.</div>';
     return;
   }
   container.innerHTML = '<table class="admin-table"><thead><tr><th>Name</th><th>Created</th><th></th></tr></thead><tbody>' +
@@ -1855,7 +2075,7 @@ async function renderAdminResults() {
   if (error) { container.innerHTML = `<div class="panel-msg error">${escHtml(error.message)}</div>`; return; }
   _adminResultsCache = data ?? [];
   if (_adminResultsCache.length === 0) {
-    container.innerHTML = '<div style="color:#7a9bb5; padding:8px">No results yet for your scope.</div>';
+    container.innerHTML = '<div style="color:var(--muted); padding:8px">No results yet for your scope.</div>';
     return;
   }
   container.innerHTML = '<table class="admin-table"><thead><tr>' +
