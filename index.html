@@ -977,7 +977,11 @@ async function authSubmit() {
       if (error) throw error;
       closeAuthModal();
     } else {
-      const { error } = await db.auth.signUp({ email, password });
+      const { error } = await db.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}${window.location.pathname}` },
+      });
       if (error) throw error;
       showAuthMsg('info', 'Account created! Check your email to confirm, then sign in.');
     }
