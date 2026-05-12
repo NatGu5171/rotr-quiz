@@ -48,7 +48,7 @@ supabase secrets set RESEND_FROM_ADDRESS="Rules of the Road <results@yourdomain.
 # (or: "onboarding@resend.dev" while testing)
 
 # Where the Edge Functions fetch the question bank from
-supabase secrets set QUESTIONS_URL="https://<your-github-pages-domain>/rotr_questions.json"
+supabase secrets set QUESTIONS_URL="https://rotrquiz.com/rotr_questions.json"
 ```
 
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically — do not set them.
@@ -97,27 +97,39 @@ Dashboard → **Authentication** → **Email**:
 | Username | `resend` |
 | Password | the `supabase-auth-smtp` API key |
 
-### 5.4 URL Configuration
+### 5.4 Custom domain (rotrquiz.com)
+
+The site is served from `https://rotrquiz.com` (apex), with `www.rotrquiz.com` redirecting to the apex. Hosted on GitHub Pages, DNS via Cloudflare.
+
+**DNS records in Cloudflare** (proxy: **DNS only** / gray cloud — required for GitHub's Let's Encrypt cert provisioning):
+
+| Type | Name | Value |
+|---|---|---|
+| A | `@` | `185.199.108.153` |
+| A | `@` | `185.199.109.153` |
+| A | `@` | `185.199.110.153` |
+| A | `@` | `185.199.111.153` |
+| CNAME | `www` | `natgu5171.github.io` |
+
+**GitHub Pages config**: Settings → Pages → Custom domain `rotrquiz.com`, Enforce HTTPS enabled. GitHub auto-commits a `CNAME` file at the repo root.
+
+### 5.5 URL Configuration
 
 Dashboard → **Authentication** → **URL Configuration**:
 
-- **Site URL**: `https://natgu5171.github.io/rotr-quiz/`
+- **Site URL**: `https://rotrquiz.com/`
 - **Redirect URLs** (allowlist):
-  - `https://natgu5171.github.io/rotr-quiz/**`
+  - `https://rotrquiz.com/**`
   - `http://localhost:8000/**` (local testing)
   - `http://127.0.0.1:8000/**` (local testing)
 
-### 5.5 emailRedirectTo workaround
+### 5.6 emailRedirectTo (defensive)
 
-Supabase strips the path from Site URL when building the confirmation link's `redirect_to` parameter (it keeps only the origin). Without intervention, users land on `https://natgu5171.github.io/` (GitHub Pages user root → 404) instead of the project page.
-
-[index.html](index.html) passes `emailRedirectTo` explicitly on `signUp`:
+Supabase strips the path from Site URL when building the `redirect_to` parameter of confirmation links — only the origin survives. With `rotrquiz.com` (no path on the apex), this is moot in production, but [index.html](index.html) still passes `emailRedirectTo` explicitly on `signUp` so the same code keeps working on local dev (`http://localhost:8000/some/path`) and on any future deploy that does have a path:
 
 ```js
 options: { emailRedirectTo: `${window.location.origin}${window.location.pathname}` }
 ```
-
-This forces Supabase to use the full deploy URL, and works identically in local and prod since it's derived from `window.location`.
 
 ## 6. End-to-end checks
 
